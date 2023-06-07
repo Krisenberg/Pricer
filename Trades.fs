@@ -5,4 +5,5 @@ type Trade = Payment of PaymentRecord
 
 type TradeID = System.Guid
 
-let newTradeID () : TradeID= System.Guid.NewGuid()
+let newTradeID () : TradeID = System.Guid.NewGuid()
+let fact()= 1
