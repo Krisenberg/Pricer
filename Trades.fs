@@ -2,8 +2,9 @@ module Trades
 open Payment
 open EuropeanOption
 
-type Trade = | Payment of PaymentRecord
-             | EuropeanOption of EuropeanOptionRecord
+type Trade =
+            | Payment of PaymentRecord
+            | EuropeanOption of EuropeanOptionRecord
 
 type TradeID = System.Guid
 

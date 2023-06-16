@@ -7,6 +7,7 @@ open Messages
 open Model
 open Money
 open Payment
+open EuropeanOption
 open Radzen.Blazor
 open System.Collections.Generic
 open Trades
@@ -66,6 +67,7 @@ let summary (model: Model) dispatch =
         |> Seq.choose (fun x ->
             match x.trade with
             | Payment p -> p.Value
+            | EuropeanOption eo -> eo.Value
             )
         |> Seq.groupBy (fun m -> m.Currency)
     let summaryRow (ccy,values : Money seq) =
@@ -82,6 +84,18 @@ let paymentRow dispatch (tradeId, p : PaymentRecord) =
     let value = p.Value |> Option.map (string) |> Option.defaultValue "" 
     let tradeChange msg s = dispatch <| TradeChange (msg (tradeId,s))
     Templates.PaymentsRow()
+        .Name(p.TradeName,tradeChange NewName)
+        .Expiry(sprintf "%A" p.Expiry, tradeChange NewExpiry)
+        .Currency(p.Currency, tradeChange NewCurrency)
+        .Principal(sprintf "%i" p.Principal, tradeChange NewPrincipal)
+        .Value(value)
+        .Delete(fun e -> dispatch (RemoveTrade tradeId))
+        .Elt()
+
+let europeanOptionRow dispatch (tradeId, eo : EuropeanOptionRecord) =
+    let value = eo.Value |> Option.map (string) |> Option.defaultValue "" 
+    let tradeChange msg s = dispatch <| TradeChange (msg (tradeId,s))
+    Templates.EuropeanOptionsRows()
         .Name(p.TradeName,tradeChange NewName)
         .Expiry(sprintf "%A" p.Expiry, tradeChange NewExpiry)
         .Currency(p.Currency, tradeChange NewCurrency)

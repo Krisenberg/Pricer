@@ -31,6 +31,45 @@
         ${PaymentRows}
       </tbody>
     </table>
+    <h1 class="title">European Options</h1>
+    <button class="rz-button rz-secondary rz-ripple rz-border-radius-1"
+            onclick="${RecalculateAll}">Recalculate All</button>
+    <button class="rz-button rz-secondary rz-ripple rz-border-radius-1"
+            onclick="${AddEuropeanOption}">Add New</button>
+    <table class="rz-grid-table">
+      <tbody>
+        <tr>
+          <th></th>
+          <th style="width: 9%;">Name</th>
+          <th style="width: 9%;">Spot</th>
+          <th style="width: 9%;">Strike</th>
+          <th style="width: 9%;">Drift</th>
+          <th style="width: 9%;">Volatility</th>
+          <th style="width: 9%;">Expiry</th>
+          <th style="width: 9%;">Currency</th>
+          <th style="width: 9%;">Valuation Method</th>
+          <th style="width: 9%;">Option Type</th>
+          <th style="width: 9%;">Value</th>
+        </tr>
+        <template id="PaymentsRow">
+          <tr>
+            <td><button class="rz-button rz-ripple rz-border-radius-1"
+                        onclick="${Delete}">X</button></td>
+            <td><input bind-onchange="${Name}"/></td>
+            <td><input bind-onchange="${Spot}"/></td>
+            <td><input bind-onchange="${Strike}"/></td>
+            <td><input bind-onchange="${Drift}"/></td>
+            <td><input bind-onchange="${Volatility}"/></td>
+            <td><input bind-onchange="${Expiry}"/></td>
+            <td><input bind-onchange="${Currency}"/></td>
+            <td><input bind-onchange="${Valuation Method}"/></td>
+            <td><input bind-onchange="${Option Type}"/></td>
+            <td>${Value}</td>
+          </tr>
+        </template>
+        ${EuropeanOptionsRows}
+      </tbody>
+    </table>
     </div>
   </template>
 

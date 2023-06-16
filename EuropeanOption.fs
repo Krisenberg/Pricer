@@ -8,15 +8,16 @@ open MathNet.Numerics.Distributions
 // Model for European Option trades.
 type EuropeanOptionRecord =
     {
-        TradeName  : string
-        SpotPrice  : float
-        Strike     : float
-        Drift      : float
-        Volatility : float
-        Expiry     : DateTime
-        Currency   : string
-        CallPrice  : Money option
-        PutPrice  : Money option
+        TradeName       : string
+        SpotPrice       : float
+        Strike          : float
+        Drift           : float
+        Volatility      : float
+        Expiry          : DateTime
+        Currency        : string
+        ValuationMethod : string
+        OptionType      : string
+        Value           : Money option
     }
     
     (* Simple utility method for creating a random payment. *)
@@ -30,15 +31,16 @@ type EuropeanOptionRecord =
                               else knownCurrenciesDefault
         
         {
-            TradeName  = sprintf "Payment%04d" (EuropeanOptionRecord.sysRandom.Next(9999))
-            SpotPrice  = EuropeanOptionRecord.sysRandom.Next(50,500)
-            Strike     = EuropeanOptionRecord.sysRandom.Next(50,500)
-            Drift      = EuropeanOptionRecord.sysRandom.Next(0,30)
-            Volatility = EuropeanOptionRecord.sysRandom.Next(0,30)
-            Expiry     = (DateTime.Now.AddMonths (EuropeanOptionRecord.sysRandom.Next(1, 6))).Date
-            Currency   = knownCurrencies.[ EuropeanOptionRecord.sysRandom.Next(knownCurrencies.Length) ]
-            CallPrice  = None
-            PutPrice   = None
+            TradeName       = sprintf "Payment%04d" (EuropeanOptionRecord.sysRandom.Next(9999))
+            SpotPrice       = EuropeanOptionRecord.sysRandom.Next(50,500)
+            Strike          = EuropeanOptionRecord.sysRandom.Next(50,500)
+            Drift           = EuropeanOptionRecord.sysRandom.Next(0,30)
+            Volatility      = EuropeanOptionRecord.sysRandom.Next(0,30)
+            Expiry          = (DateTime.Now.AddMonths (EuropeanOptionRecord.sysRandom.Next(1, 6))).Date
+            Currency        = knownCurrencies.[ EuropeanOptionRecord.sysRandom.Next(knownCurrencies.Length) ]
+            ValuationMethod = "Formulas"
+            OptionType      = "Call"
+            Value           = None
         }
 
 (* Complete set of data required for valuation *)
@@ -59,6 +61,7 @@ type EuropeanOptionValuationModel(inputs: EuropeanOptionValuationInputs) =
     we simply return the value using the trade currency.
 
     *)
+    member this.valuationMethods = dict<string*string, float -> float>[("Formulas", "Call"), this.calculateCallFormula; ("Formulas", "Put"), this.calculatePutFormula]
     member this.PrepareCurrencies() : float * ConfigValue = 
         let tradeCcy = inputs.Trade.Currency
 
@@ -95,9 +98,12 @@ type EuropeanOptionValuationModel(inputs: EuropeanOptionValuationInputs) =
         let putPrice = (inputs.Trade.Strike * (exp((-1.0)*inputs.Trade.Drift*time)) * Normal.CDF(0.0, 1.0, (inputs.Trade.Volatility * sqrt(time)) - d1)) - (inputs.Trade.SpotPrice * Normal.CDF(0.0, 1.0, (-1.0) * d1))
         putPrice
 
-    // member this.CalculateFormulas() : Money = 
-    //     let fxRate, finalCcy = this.PrepareCurrencies()
 
-    //     { Value = (float inputs.Trade.Principal) / fxRate; Currency = finalCcy }
+    member this.Calculate() : Money = 
+        let fxRate, finalCcy = this.PrepareCurrencies()
+        let time = this.calculateTimeToExpiry()
+        let calculatedValue = this.valuationMethods.Item((inputs.Trade.ValuationMethod, inputs.Trade.OptionType)) time
+
+        { Value = calculatedValue / fxRate; Currency = finalCcy }
     
     // member this.CalculateMonteCarlo() : Money =
