@@ -5,6 +5,7 @@
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Sandbox.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="Money.fs" />
     <Compile Include="Configuration.fs" />

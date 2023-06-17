@@ -96,10 +96,15 @@ let europeanOptionRow dispatch (tradeId, eo : EuropeanOptionRecord) =
     let value = eo.Value |> Option.map (string) |> Option.defaultValue "" 
     let tradeChange msg s = dispatch <| TradeChange (msg (tradeId,s))
     Templates.EuropeanOptionsRows()
-        .Name(p.TradeName,tradeChange NewName)
-        .Expiry(sprintf "%A" p.Expiry, tradeChange NewExpiry)
-        .Currency(p.Currency, tradeChange NewCurrency)
-        .Principal(sprintf "%i" p.Principal, tradeChange NewPrincipal)
+        .Name(eo.TradeName,tradeChange NewName)
+        .Spot(sprintf "%.2f" eo.SpotPrice,tradeChange NewSpotPrice)
+        .Strike(sprintf "%.2f" eo.Strike,tradeChange NewStrike)
+        .Drift(sprintf "%.2f" eo.Drift, tradeChange NewDrift)
+        .Volatility(sprintf "%.2f" eo.Volatility, tradeChange NewVolatility)
+        .Expiry(sprintf "%A" eo.Expiry, tradeChange NewExpiry)
+        .Currency(eo.Currency, tradeChange NewCurrency)
+        .ValuationMethod(eo.ValuationMethod, tradeChange NewValuationMethod)
+        .OptionType(eo.OptionType, tradeChange NewOptionType)
         .Value(value)
         .Delete(fun e -> dispatch (RemoveTrade tradeId))
         .Elt()
@@ -107,16 +112,24 @@ let europeanOptionRow dispatch (tradeId, eo : EuropeanOptionRecord) =
 let homePage (model: Model) dispatch =
 
     let payments = onlyPayments model.trades
-    let trades = 
-        Templates.Trades()
+    let europeanOptions = onlyEuropeanOptions model.trades
+    let paymentsView = 
+        Templates.Payments()
             .AddPayment(fun _ -> dispatch AddPayment)
             .RecalculateAll(fun _ -> dispatch RecalculateAll)
             .PaymentRows(forEach payments (paymentRow dispatch))
             .Elt()
+    let europeanOptionsView = 
+        Templates.EuropeanOptions()
+            .AddEuropeanOption(fun _ -> dispatch AddEuropeanOption)
+            .RecalculateAll(fun _ -> dispatch RecalculateAll)
+            .EuropeanOptionsRows(forEach europeanOptions (europeanOptionRow dispatch))
+            .Elt()
 
     Templates.Home()
      .SummaryPlaceholder(summary model dispatch)
-     .TradesPlaceholder(trades)
+     .PaymentsPlaceholder(paymentsView)
+     .EuropeanOptionsPlaceholder(europeanOptionsView)
      .MarketDataPlaceholder(marketDataDisplay model.marketData dispatch)
      .ChartsPlaceholder(plotLineChart model.chart)
      .Elt()

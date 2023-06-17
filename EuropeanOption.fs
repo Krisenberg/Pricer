@@ -31,7 +31,7 @@ type EuropeanOptionRecord =
                               else knownCurrenciesDefault
         
         {
-            TradeName       = sprintf "Payment%04d" (EuropeanOptionRecord.sysRandom.Next(9999))
+            TradeName       = sprintf "EuropeanOption%04d" (EuropeanOptionRecord.sysRandom.Next(9999))
             SpotPrice       = EuropeanOptionRecord.sysRandom.Next(50,500)
             Strike          = EuropeanOptionRecord.sysRandom.Next(50,500)
             Drift           = EuropeanOptionRecord.sysRandom.Next(0,30)
@@ -62,6 +62,8 @@ type EuropeanOptionValuationModel(inputs: EuropeanOptionValuationInputs) =
 
     *)
     member this.valuationMethods = dict<string*string, float -> float>[("Formulas", "Call"), this.calculateCallFormula; ("Formulas", "Put"), this.calculatePutFormula]
+    member this.drift = inputs.Trade.Drift / 100.0
+    member this.volatility = inputs.Trade.Volatility / 100.0
     member this.PrepareCurrencies() : float * ConfigValue = 
         let tradeCcy = inputs.Trade.Currency
 
@@ -84,18 +86,18 @@ type EuropeanOptionValuationModel(inputs: EuropeanOptionValuationInputs) =
         partOfYear
 
     member this.calculateD1Formula(time : float) : float =
-        let numerator = (log(inputs.Trade.SpotPrice/inputs.Trade.Strike) + (inputs.Trade.Drift + (inputs.Trade.Volatility ** 2.0)/2.0) * time)
+        let numerator = (log(inputs.Trade.SpotPrice/inputs.Trade.Strike) + (this.drift + (this.volatility ** 2.0)/2.0) * time)
         let denominator = (inputs.Trade.Volatility * sqrt(time))
         (numerator/denominator)
 
     member this.calculateCallFormula(time : float) : float =
         let d1 = this.calculateD1Formula(time)
-        let callPrice = (inputs.Trade.SpotPrice * Normal.CDF(0.0, 1.0, d1)) - (inputs.Trade.Strike * (exp((-1.0)*inputs.Trade.Drift*time)) * Normal.CDF(0.0, 1.0, d1 - (inputs.Trade.Volatility * sqrt(time))))
+        let callPrice = (inputs.Trade.SpotPrice * Normal.CDF(0.0, 1.0, d1)) - (inputs.Trade.Strike * (exp((-1.0)*this.drift*time)) * Normal.CDF(0.0, 1.0, d1 - (this.volatility * sqrt(time))))
         callPrice
 
     member this.calculatePutFormula(time : float) : float =
         let d1 = this.calculateD1Formula(time)
-        let putPrice = (inputs.Trade.Strike * (exp((-1.0)*inputs.Trade.Drift*time)) * Normal.CDF(0.0, 1.0, (inputs.Trade.Volatility * sqrt(time)) - d1)) - (inputs.Trade.SpotPrice * Normal.CDF(0.0, 1.0, (-1.0) * d1))
+        let putPrice = (inputs.Trade.Strike * (exp((-1.0)*this.drift*time)) * Normal.CDF(0.0, 1.0, (this.volatility * sqrt(time)) - d1)) - (inputs.Trade.SpotPrice * Normal.CDF(0.0, 1.0, (-1.0) * d1))
         putPrice
 
 
