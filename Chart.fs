@@ -1,6 +1,7 @@
 module Chart
 open Radzen.Blazor
 open System
+open Trades
 
 type ChartItem =
     { 
@@ -41,6 +42,22 @@ type ChartData =
 
 //TODO: remove after we add non-dummy chart
 //how to construct a chart:
+type itemsXaxis =
+  | SpotPrice
+  | StrikePrice
+  | Volatility
+  | Drift
+
+type itemsYaxis =
+  | Value
+  | Delta
+
+let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrades, scopeX, scopeY) : ChartData =
+    let scopeXlow, scopeXhigh = scopeX
+    let scopeYlow, scopeYhigh = scopeY
+    scopeXlow
+
+
 let mkDummyChart () : ChartData = 
 
     let r = Random()

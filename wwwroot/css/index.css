@@ -38,3 +38,9 @@ body {
   margin-right: auto;
   margin-bottom: 5px;
 }
+
+.rotated-header {
+  width: 8%;
+  transform: rotate(-45deg);
+  writing-mode: vertical-lr;
+}

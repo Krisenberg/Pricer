@@ -63,11 +63,11 @@ module Trades =
     let onlyPayments (trades : Map<_,UITrade>) =
         trades |> choose (fun t -> match t.trade with 
                                     | Payment p -> Some <| (t.id,p)
-                                    | _ -> None //this line will be needed when there's more trade types
+                                    | _ -> None
                         )
 
     let onlyEuropeanOptions (trades : Map<_,UITrade>) =
       trades |> choose (fun t -> match t.trade with 
                                   | EuropeanOption eo -> Some <| (t.id,eo)
-                                  | _ -> None //this line will be needed when there's more trade types
+                                  | _ -> None
                         )

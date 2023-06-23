@@ -13,6 +13,7 @@ let valuateTrade config marketData (trade : Trade) : Trade =
         }
       let vm = PaymentValuationModel(inputs)
       Payment { p with Value = Some <| vm.Calculate()}
+
   | EuropeanOption eo ->
       let inputs : EuropeanOptionValuationInputs =
         { Trade = eo
@@ -20,7 +21,10 @@ let valuateTrade config marketData (trade : Trade) : Trade =
           MarketData = marketData
         }
       let vm = EuropeanOptionValuationModel(inputs)
-      EuropeanOption { eo with Value = Some <| vm.Calculate() }
+      let value, delta = vm.Calculate()
+      EuropeanOption { eo with 
+                          Value = Some <| value
+                          Delta = Some <| delta}
 
 
 

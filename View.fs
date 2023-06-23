@@ -94,7 +94,12 @@ let paymentRow dispatch (tradeId, p : PaymentRecord) =
 
 let europeanOptionRow dispatch (tradeId, eo : EuropeanOptionRecord) =
     let value = eo.Value |> Option.map (string) |> Option.defaultValue "" 
+    let delta = match eo.Delta with
+                    | Some delta -> System.Math.Round (delta, 2) |> string
+                    | None -> ""
+
     let tradeChange msg s = dispatch <| TradeChange (msg (tradeId,s))
+
     Templates.EuropeanOptionsRows()
         .Name(eo.TradeName,tradeChange NewName)
         .Spot(sprintf "%.2f" eo.SpotPrice,tradeChange NewSpotPrice)
@@ -103,9 +108,10 @@ let europeanOptionRow dispatch (tradeId, eo : EuropeanOptionRecord) =
         .Volatility(sprintf "%.2f" eo.Volatility, tradeChange NewVolatility)
         .Expiry(sprintf "%A" eo.Expiry, tradeChange NewExpiry)
         .Currency(eo.Currency, tradeChange NewCurrency)
-        .ValuationMethod(eo.ValuationMethod, tradeChange NewValuationMethod)
-        .OptionType(eo.OptionType, tradeChange NewOptionType)
+        .ValuationMethod(string eo.ValuationMethod, tradeChange NewValuationMethod)
+        .OptionType(string eo.OptionType, tradeChange NewOptionType)
         .Value(value)
+        .Delta(delta)
         .Delete(fun e -> dispatch (RemoveTrade tradeId))
         .Elt()
 

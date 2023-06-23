@@ -106,13 +106,19 @@ let tradeChangeUpdate (model : Model) = function
     | NewValuationMethod (id,valuationMethod) ->
         changeTrade model.trades id 
                 (Trades.tryMap ( function
-                                | EuropeanOption eo -> Some <| EuropeanOption { eo with ValuationMethod = valuationMethod}
+                                | EuropeanOption eo -> 
+                                    parseValuationMethod(valuationMethod)
+                                    |> Option.map (fun valMet -> 
+                                            EuropeanOption { eo with ValuationMethod = valMet})
                                 | _ -> None))
 
     | NewOptionType (id,optionType) ->
         changeTrade model.trades id 
                 (Trades.tryMap ( function
-                                | EuropeanOption eo -> Some <| EuropeanOption { eo with OptionType = optionType}
+                                | EuropeanOption eo ->
+                                    parseOptionType(optionType)
+                                    |> Option.map (fun optType -> 
+                                            EuropeanOption { eo with OptionType = optType})
                                 | _ -> None))
 
 let update (http: HttpClient) message model =

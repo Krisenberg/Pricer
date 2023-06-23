@@ -40,30 +40,42 @@
         <tbody>
           <tr>
             <th></th>
-            <th style="width: 9%;">Name</th>
-            <th style="width: 9%;">Spot</th>
-            <th style="width: 9%;">Strike</th>
-            <th style="width: 9%;">Drift</th>
-            <th style="width: 9%;">Vol.</th>
-            <th style="width: 9%;">Expiry</th>
-            <th style="width: 9%;">Currency</th>
-            <th style="width: 9%;">Val. Method</th>
-            <th style="width: 9%;">Option Type</th>
-            <th style="width: 9%;">Value</th>
+            <th style="width: 10%;">Name</th>
+            <th style="width: 5%;">Spot</th>
+            <th style="width: 5%;">Strike</th>
+            <th style="width: 5%;">Drift(%)</th>
+            <th style="width: 5%;">Vol.(%)</th>
+            <th style="width: 10%;">Expiry</th>
+            <th style="width: 6%;">Currency</th>
+            <th style="width: 8%;">Val. Method</th>
+            <th style="width: 10%;">Option Type</th>
+            <th style="width: 10%;">Value</th>
+            <th style="width: 10%;">Delta</th>
           </tr>
           <template id="EuropeanOptionsRows">
             <tr>
               <td><button class="rz-button rz-ripple rz-border-radius-1" onclick="${Delete}">X</button></td>
-              <td><input bind-onchange="${Name}" style="width: 120px;"/></td>
+              <td><input bind-onchange="${Name}" style="width: 150px;"/></td>
               <td><input bind-onchange="${Spot}" style="width: 60px;"/></td>
               <td><input bind-onchange="${Strike}" style="width: 60px;"/></td>
-              <td><input bind-onchange="${Drift}" style="width: 35px;"/></td>
-              <td><input bind-onchange="${Volatility}" style="width: 35px;"/></td>
-              <td><input bind-onchange="${Expiry}" style="width: 100px;"/></td>
-              <td><input bind-onchange="${Currency}" style="width: 30px;"/></td>
-              <td><input bind-onchange="${ValuationMethod}" style="width: 100px;"/></td>
-              <td><input bind-onchange="${OptionType}" style="width: 35px;"/></td>
+              <td><input bind-onchange="${Drift}" style="width: 50px;"/></td>
+              <td><input bind-onchange="${Volatility}" style="width: 50px;"/></td>
+              <td><input bind-onchange="${Expiry}" style="width: 150px;"/></td>
+              <td><input bind-onchange="${Currency}" style="width: 40px;"/></td>
+              <td>
+                <select bind-onchange="${ValuationMethod}" style="width: 100px;">
+                    <option value="Analytical">Analytical</option>
+                    <option value="MonteCarlo">Monte Carlo</option>
+                </select>
+              </td>
+              <td>
+                <select bind-onchange="${OptionType}" style="width: 80px;">
+                    <option value="Call">Call</option>
+                    <option value="Put">Put</option>
+                </select>
+              </td>
               <td>${Value}</td>
+              <td>${Delta}</td>
             </tr>
           </template>
           ${EuropeanOptionsRows}
