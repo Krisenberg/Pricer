@@ -84,7 +84,7 @@ type EuropeanOptionValuationModel(inputs: EuropeanOptionValuationInputs) =
 
     *)
     member this.valuationMethods = 
-        dict<ValuationMethod * OptionType, unit -> float*float>[(Formulas, Call), this.calculateFormulas;(Formulas, Put), this.calculateFormulas]
+        dict<ValuationMethod * OptionType, float*float*float*float -> float*float>[(Formulas, Call), this.calculateFormulas;(Formulas, Put), this.calculateFormulas]
     member this.drift = inputs.Trade.Drift / 100.0
     member this.volatility = inputs.Trade.Volatility / 100.0
     member this.time = this.calculateMaturity()
@@ -110,24 +110,50 @@ type EuropeanOptionValuationModel(inputs: EuropeanOptionValuationInputs) =
 
         (fxRate, finalCcy)
 
-    member this.calculateD1Formula() : float =
-        let numerator = (log(inputs.Trade.SpotPrice/inputs.Trade.Strike) + (this.drift + (this.volatility ** 2.0)/2.0) * this.time)
-        let denominator = (this.volatility * sqrt(this.time))
+    // member this.calculateD1Formula() : float =
+    //     let numerator = (log(inputs.Trade.SpotPrice/inputs.Trade.Strike) + (this.drift + (this.volatility ** 2.0)/2.0) * this.time)
+    //     let denominator = (this.volatility * sqrt(this.time))
+    //     (numerator/denominator)
+
+    member this.calculateD1Formula(spot, strike, drift, volatility) : float =
+        let numerator = (log(spot/strike) + (drift + (volatility ** 2.0)/2.0) * this.time)
+        let denominator = (volatility * sqrt(this.time))
         (numerator/denominator)
 
 
-    member this.calculateFormulas() : float*float =
-        let d1 = this.calculateD1Formula()
+    // member this.calculateFormulas() : float*float =
+    //     let d1 = this.calculateD1Formula()
+    //     let d1CDF = Normal.CDF(0.0, 1.0, d1)
+    //     let d2CDF = Normal.CDF(0.0, 1.0, d1 - (this.volatility * sqrt(this.time)))
+    //     let neg_d1CDF = Normal.CDF(0.0, 1.0, (-1.0) * d1)
+    //     let neg_d2CDF = Normal.CDF(0.0, 1.0, (this.volatility * sqrt(this.time)) - d1)
+    //     let power = exp((-1.0) * this.drift * this.time)
+
+    //     let value =
+    //         match inputs.Trade.OptionType with
+    //         | Call -> (inputs.Trade.SpotPrice *d1CDF) - (inputs.Trade.Strike * power) * d2CDF
+    //         | Put -> (inputs.Trade.Strike * power * neg_d2CDF) - (inputs.Trade.SpotPrice * neg_d1CDF)
+
+    //     let delta =
+    //         match inputs.Trade.OptionType with
+    //         | Call -> d1CDF
+    //         | Put -> (-1.0) * neg_d1CDF
+
+    //     (value, delta)
+
+
+    member this.calculateFormulas(spot, strike, drift, volatility) : float*float =
+        let d1 = this.calculateD1Formula(spot, strike, drift, volatility)
         let d1CDF = Normal.CDF(0.0, 1.0, d1)
-        let d2CDF = Normal.CDF(0.0, 1.0, d1 - (this.volatility * sqrt(this.time)))
+        let d2CDF = Normal.CDF(0.0, 1.0, d1 - (volatility * sqrt(this.time)))
         let neg_d1CDF = Normal.CDF(0.0, 1.0, (-1.0) * d1)
-        let neg_d2CDF = Normal.CDF(0.0, 1.0, (this.volatility * sqrt(this.time)) - d1)
-        let power = exp((-1.0) * this.drift * this.time)
+        let neg_d2CDF = Normal.CDF(0.0, 1.0, (volatility * sqrt(this.time)) - d1)
+        let power = exp((-1.0) * drift * this.time)
 
         let value =
             match inputs.Trade.OptionType with
-            | Call -> (inputs.Trade.SpotPrice *d1CDF) - (inputs.Trade.Strike * power) * d2CDF
-            | Put -> (inputs.Trade.Strike * power * neg_d2CDF) - (inputs.Trade.SpotPrice * neg_d1CDF)
+            | Call -> (spot *d1CDF) - (strike * power) * d2CDF
+            | Put -> (strike * power * neg_d2CDF) - (spot * neg_d1CDF)
 
         let delta =
             match inputs.Trade.OptionType with
@@ -140,17 +166,32 @@ type EuropeanOptionValuationModel(inputs: EuropeanOptionValuationInputs) =
 
     member this.Calculate() : Money*float = 
         let fxRate, finalCcy = this.PrepareCurrencies()
-        let value, delta = this.valuationMethods.Item((inputs.Trade.ValuationMethod, inputs.Trade.OptionType))()
+        let value, delta = this.valuationMethods.Item((inputs.Trade.ValuationMethod, inputs.Trade.OptionType))(inputs.Trade.SpotPrice, inputs.Trade.Strike, this.drift, this.volatility)
 
         { Value = value / fxRate; Currency = finalCcy }, delta
 
 
     member this.CalculateOtherSpot(spotPrice : float) : Money * float =
-        
-
-
         let fxRate, finalCcy = this.PrepareCurrencies()
-        let value, delta = this.valuationMethods.Item((inputs.Trade.ValuationMethod, inputs.Trade.OptionType))()
+        let value, delta = this.valuationMethods.Item((inputs.Trade.ValuationMethod, inputs.Trade.OptionType))(spotPrice, inputs.Trade.Strike, this.drift, this.volatility)
+
+        { Value = value / fxRate; Currency = finalCcy }, delta
+
+    member this.CalculateOtherStrike(strike : float) : Money * float =
+        let fxRate, finalCcy = this.PrepareCurrencies()
+        let value, delta = this.valuationMethods.Item((inputs.Trade.ValuationMethod, inputs.Trade.OptionType))(inputs.Trade.SpotPrice, strike, this.drift, this.volatility)
+
+        { Value = value / fxRate; Currency = finalCcy }, delta
+
+    member this.CalculateOtherDrift(drift : float) : Money * float =
+        let fxRate, finalCcy = this.PrepareCurrencies()
+        let value, delta = this.valuationMethods.Item((inputs.Trade.ValuationMethod, inputs.Trade.OptionType))(inputs.Trade.SpotPrice, inputs.Trade.Strike, drift, this.volatility)
+
+        { Value = value / fxRate; Currency = finalCcy }, delta
+
+    member this.CalculateOtherVolatility(volatility : float) : Money * float =
+        let fxRate, finalCcy = this.PrepareCurrencies()
+        let value, delta = this.valuationMethods.Item((inputs.Trade.ValuationMethod, inputs.Trade.OptionType))(inputs.Trade.SpotPrice, inputs.Trade.Strike, this.drift, volatility)
 
         { Value = value / fxRate; Currency = finalCcy }, delta
     

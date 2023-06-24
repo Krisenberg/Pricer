@@ -18,6 +18,11 @@ type TradeChangeMsg =
     | NewValuationMethod of TradeID * string
     | NewOptionType of TradeID * string
 
+type EOChartChangeMsg =
+    | NewItemXaxis of string
+    | NewItemYaxis of string
+    | NewScopeX of string
+
 /// The Elmish application's update messages.
 type Message =
     | SetPage of Page
@@ -26,6 +31,7 @@ type Message =
     | RemoveTrade of TradeID
     | TradeChange of TradeChangeMsg
     | RecalculateAll
+    | EOChartChange of EOChartChangeMsg
     | LoadData
     | GotConfig of JsonConfig
     | ConfigChange of string * string

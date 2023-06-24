@@ -6,6 +6,7 @@ open Messages
 open Model
 open Payment
 open EuropeanOption
+open Chart
 open System
 open System.Net.Http
 open System.Net.Http.Json
@@ -121,6 +122,25 @@ let tradeChangeUpdate (model : Model) = function
                                             EuropeanOption { eo with OptionType = optType})
                                 | _ -> None))
 
+let getTradesArray (trades : Map<_,UITrade>) =
+    onlyEuropeanOptions(trades) |> List.map (fun (_, eoRecord) -> eoRecord) |> Array.ofList
+    //model.trades |> Map.toSeq |> Seq.map (fun (_, uiTrade) -> uiTrade.trade) |> Array.ofSeq
+
+let chartChangeUpdate (model : Model) = function
+    | NewItemXaxis item -> parseItemXaxis(item)
+                                   |> Option.map (fun optItem ->
+                                        { model with chart=makeEuropeanOptionsChart(optItem, model.chart.ItemY, getTradesArray(model.trades), model.chart.ScopeX, model.configuration, model.marketData)})
+    | NewItemYaxis item -> parseItemYaxis(item)
+                                   |> Option.map (fun optItem ->
+                                        { model with chart=makeEuropeanOptionsChart(model.chart.ItemX, optItem, getTradesArray(model.trades), model.chart.ScopeX, model.configuration, model.marketData)})
+    | NewScopeX (newScope) -> 
+                                    let (scopeXlow, scopeXhigh)=(newScope.Split(';').[0], newScope.Split(';').[1])
+                                    (scopeXlow, scopeXhigh)
+                                    |> Utils.tryParseTupleFloats
+                                    |> Utils.ofBoolTuple
+                                    |> Utils.optionMapTuple (fun (xLow, xHigh) ->
+                                        { model with chart=makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, getTradesArray(model.trades), (xLow, xHigh), model.configuration, model.marketData)})
+
 let update (http: HttpClient) message model =
     match message with
     | SetPage page ->
@@ -132,13 +152,22 @@ let update (http: HttpClient) message model =
     | AddEuropeanOption ->
         let newEuropeanOption = Trades.wrap (EuropeanOption <| EuropeanOptionRecord.Random(model.configuration))
         let newTrades = Map.add newEuropeanOption.id newEuropeanOption model.trades
-        { model with trades = newTrades }, Cmd.none
+        { model with 
+            trades = newTrades
+            chart = makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, getTradesArray(newTrades), model.chart.ScopeX, model.configuration, model.marketData)
+        }, Cmd.none
     | RemoveTrade(tradeId) ->
         let newTrades = Map.remove tradeId model.trades
-        { model with trades = newTrades }, Cmd.none
+        { model with 
+            trades = newTrades
+            chart = makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, getTradesArray(newTrades), model.chart.ScopeX, model.configuration, model.marketData)
+        }, Cmd.none
     | TradeChange msg ->
         let newTrades,cmd = tradeChangeUpdate model msg
-        { model with trades = newTrades }, Cmd.batch [cmd; Cmd.ofMsg RecalculateAll] 
+        { model with 
+            trades = newTrades
+            chart = makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, getTradesArray(newTrades), model.chart.ScopeX, model.configuration, model.marketData)
+        }, Cmd.batch [cmd; Cmd.ofMsg RecalculateAll]
     | ConfigChange (key,value) ->
         let config = model.configuration
         let config' = Map.add key value config
@@ -173,7 +202,17 @@ let update (http: HttpClient) message model =
         let trades =
              model.trades
              |> Map.map (fun _ -> Trades.map <| valuateTrade model.marketData model.configuration)
-        { model with trades = trades }, Cmd.none
+        { model with 
+            trades = trades
+            chart = makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, getTradesArray(trades), model.chart.ScopeX, model.configuration, model.marketData)
+        }, Cmd.none
+    | EOChartChange msg -> 
+        let updatedModelOption = chartChangeUpdate model msg
+        let result =
+            match updatedModelOption with
+            | Some newModel -> newModel, Cmd.none
+            | None -> model, Cmd.none
+        result
     | Error exn ->
         { model with error = Some exn.Message }, Cmd.none
     | Warning err ->

@@ -47,7 +47,12 @@ let plotLineChart (data : ChartData) =
             }
         }
 
-    let Xaxis = comp<RadzenCategoryAxis>{ "Padding"=>20.0; }
+    let Xaxis = 
+        comp<RadzenCategoryAxis>{
+            "Padding"=>20.0
+            "Min" => fst data.ScopeX
+            "Max" => snd data.ScopeX
+        }
     let Yaxis =
         let title = comp<RadzenAxisTitle> { "Text" => data.Title}
         comp<RadzenValueAxis>{ attr.fragment "ChildContent" title }
