@@ -247,7 +247,12 @@ let homePage (model: Model) dispatch =
      .EuropeanOptionsPlaceholder(europeanOptionsView)
      .MarketDataPlaceholder(marketDataDisplay model.marketData dispatch)
      .EOChartConfigPlaceholder(configureChart dispatch (model, europeanOptions))
-     .ChartsPlaceholder(plotLineChart model.chart)
+     .DrawChart(fun _ -> dispatch DrawChart)
+     .ChartsPlaceholder(
+        if model.showChart then
+            plotLineChart model.chart
+        else
+            Html.empty())
      .Elt()
 
 let menuItem (model: Model) (router :Router<_,_,_>) (page: Page) (text: string) =

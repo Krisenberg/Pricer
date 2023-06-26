@@ -30,6 +30,7 @@ type Model =
         marketData: MarketData
         configuration : Configuration
         chart : ChartData
+        showChart: bool
         error: string option
     }
 
@@ -40,6 +41,7 @@ type Model =
           marketData = Map.empty
           configuration = Map.empty
           chart = makeEuropeanOptionsChart (SpotPrice, Value, Array.empty,Array.empty,(50.,300.), Map.empty, Map.empty)//TODO: change to some actual data
+          showChart = false
           error = None
       }
 

@@ -31,7 +31,9 @@ type Message =
     | AddEuropeanOption
     | RemoveTrade of TradeID
     | TradeChange of TradeChangeMsg
+    | DrawChart
     | RecalculateAll
+    | RecalculateTrade of TradeID
     | EOChartChange of EOChartChangeMsg
     | LoadData
     | GotConfig of JsonConfig

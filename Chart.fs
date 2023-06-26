@@ -105,6 +105,7 @@ let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, 
         EuropeanOptionValuationModel(inputs)
 
       let getMoneyValue (money : Money) = money.Value
+      let getMoneyCurr (money : Money) = money.Currency
 
       let calcFunc = 
         match (itemXaxis, itemYaxis) with
@@ -119,8 +120,9 @@ let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, 
 
       //step 1: have a sequence of values (x,y)
       let series =
+        let step = (scopeXhigh - scopeXlow) / 200.
         seq {
-          for i in scopeXlow .. 0.1 .. scopeXhigh do
+          for i in scopeXlow .. step .. scopeXhigh do
             yield float i, calcFunc (float i)
         }
 
