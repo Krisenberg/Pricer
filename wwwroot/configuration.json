@@ -5,6 +5,10 @@
     [
       {
         "key":"runs",
+        "value":"1000"
+      },
+      {
+        "key":"simulationSteps",
         "value":"100"
       }
     ]

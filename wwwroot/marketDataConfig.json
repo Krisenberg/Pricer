@@ -14,6 +14,10 @@
       {
         "key":"USDEUR",
         "value":"0.95"
+      },
+      {
+        "key":"USDGBP",
+        "value":"0.79"
       }
     ]
   }
