@@ -5,6 +5,7 @@ open Money
 open Trades
 open EuropeanOption
 
+
 type ChartItem =
     { 
       XValue : float
@@ -48,7 +49,7 @@ type ChartData =
     Title      : string
     ItemX      : itemsXaxis
     ItemY      : itemsYaxis
-    Trades     : EuropeanOptionRecord array
+    Trades     : TradeID array
     ScopeX     : float * float
     Data       : Configuration.Configuration
     MarketData : Configuration.MarketData
@@ -81,7 +82,14 @@ let parseItemYaxis (item : string) =
   | "Delta" -> Some Delta
   | _ -> None
 
-let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrades, scopeX, data, marketData) : ChartData =
+let itemXaxisToString (item : itemsXaxis) =
+  match item with
+  | SpotPrice -> "Spot Price"
+  | StrikePrice -> "Strike Price"
+  | Volatility -> "Volatility"
+  | Drift -> "Drift"
+
+let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, data, marketData) : ChartData =
     let scopeXlow, scopeXhigh = scopeX
 
     let makeSeries(eoTrade : EuropeanOptionRecord) : Series =
@@ -130,11 +138,11 @@ let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrades, scopeX, data, mark
 
     //step 4: add or replace series on existing chart
     { ChartData.Default with 
-        Series = Array.map makeSeries eoTrades
+        Series = Array.map makeSeries eoTrade
         Title = "Chart"
         ItemX = itemXaxis
         ItemY = itemYaxis
-        Trades = eoTrades
+        Trades = eoTradeID
         ScopeX = scopeX
         Data = data
         MarketData = marketData

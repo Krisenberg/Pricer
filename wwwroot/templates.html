@@ -63,7 +63,7 @@
               <td><input bind-onchange="${Expiry}" style="width: 150px;"/></td>
               <td><input bind-onchange="${Currency}" style="width: 40px;"/></td>
               <td>
-                <select bind-onchange="${ValuationMethod}" style="width: 100px;">
+                <select bind-onchange="${ValuationMethod}" style="width: 150px;">
                     <option value="Analytical">Analytical</option>
                     <option value="MonteCarlo">Monte Carlo</option>
                 </select>
@@ -127,12 +127,108 @@
     </div>
   </template>
 
+  <template id="ChartConfigDisplay">
+    <div class="content">
+    <h1 class="title">${Title}</h1>
+    <table class="rz-grid-table">
+      <tbody>
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+        <tr>
+          <td>Trade Name</td>
+          <td><input bind-onchange="${TradeName}" style="width: 150px;"/></td>
+        </tr>
+        <tr>
+          <td>X-axis</td>
+          <td>
+            <select bind-onchange="${Xaxis}" style="width: 150px;">
+                <option value="Spot Price">Spot Price</option>
+                <option value="Strike Price">Strike</option>
+                <option value="Volatility">Volatility</option>
+                <option value="Drift">Drift</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Y-axis</td>
+          <td>
+            <select bind-onchange="${Yaxis}" style="width: 100px;">
+                <option value="Value">Value</option>
+                <option value="Delta">Delta</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>X-axis limit (low)</td>
+          <!-- <td><input bind-onchange="${XaxisLow}" style="width: 50px;"/></td> -->
+          <input type="text" value="${XaxisLow}" oninput="app.state.XaxisLow = event.target.value" style="width: 50px;" />
+        </tr>
+        <tr>
+          <td>X-axis limit (high)</td>
+          <td><input bind-onchange="${XaxisHigh}" style="width: 50px;"/></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </template>
+
+  <template id="EuropeanOptionsChart">
+    <div class="content">
+      <h1 class="title">European Options Chart</h1>
+      <table class="rz-grid-table">
+        <tbody>
+          <tr>
+            <th style="width: 20%;">Trade Name</th>
+            <th style="width: 20%;">X-axis</th>
+            <th style="width: 20%;">Y-axis</th>
+            <th style="width: 20%;">X-axis limit (low)</th>
+            <th style="width: 20%;">X-axis limit (high)</th>
+          </tr>
+          ${Config}
+          <template id="ChartConfiguration">
+            <tr>
+              <td>
+                <select bind-onchange="${TradeName}" style="width: 150px;">
+                  <option selected disabled hidden></option>
+                  ${Names}
+                  <template id="NameSelection">
+                    <option value="${Name}">${Name}</option>
+                  </template>
+                </select>
+              </td>
+              <td>
+                <select bind-onchange="${Xaxis}" style="width: 100px;">
+                    <option value="Spot Price">Spot Price</option>
+                    <option value="Strike Price">Strike</option>
+                    <option value="Volatility">Volatility</option>
+                    <option value="Drift">Drift</option>
+                </select>
+              </td>
+              <td>
+                <select bind-onchange="${Yaxis}" style="width: 100px;">
+                    <option value="Value">Value</option>
+                    <option value="Delta">Delta</option>
+                </select>
+              </td>
+              <td><input bind-onchange="${XaxisLow}" style="width: 50px;"/></td>
+              <td><input bind-onchange="${XaxisHigh}" style="width: 50px;"/></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </template>
+
   <template id="Home">
     <div class="content">
       ${SummaryPlaceholder}
       ${PaymentsPlaceholder}
       ${EuropeanOptionsPlaceholder}
       ${MarketDataPlaceholder}
+      ${EOChartConfigPlaceholder}
+      <button class="rz-button rz-secondary rz-ripple rz-border-radius-1" onclick="${Draw}">Draw</button>
       ${ChartsPlaceholder}
     </div>
   </template>

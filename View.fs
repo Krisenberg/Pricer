@@ -29,7 +29,7 @@ let keyValueMapDisplay msg name (model: Map<string,string>) dispatch =
 let configDisplay = keyValueMapDisplay ConfigChange "Configuration"
         
 let marketDataDisplay = keyValueMapDisplay MarketDataChange "Market Data"
-        
+
 let plotLineChart (data : ChartData) =
 
     let mkSeriesComponent series =
@@ -113,12 +113,110 @@ let europeanOptionRow dispatch (tradeId, eo : EuropeanOptionRecord) =
         .Volatility(sprintf "%.2f" eo.Volatility, tradeChange NewVolatility)
         .Expiry(sprintf "%A" eo.Expiry, tradeChange NewExpiry)
         .Currency(eo.Currency, tradeChange NewCurrency)
-        .ValuationMethod(string eo.ValuationMethod, tradeChange NewValuationMethod)
+        .ValuationMethod(valuationMethodToString eo.ValuationMethod, tradeChange NewValuationMethod)
         .OptionType(string eo.OptionType, tradeChange NewOptionType)
         .Value(value)
         .Delta(delta)
         .Delete(fun e -> dispatch (RemoveTrade tradeId))
         .Elt()
+
+let configureChart dispatch (model : Model, europeanOptions : list<TradeID * EuropeanOptionRecord>)=
+    let initialMap = Map.empty
+    let addToMap map (tradeID, europeanOptionRecord) =
+        let tradeName = europeanOptionRecord.TradeName
+        Map.add tradeID tradeName map
+    let eoMap = List.fold addToMap initialMap europeanOptions 
+
+    let getTradeID (name: string) (tradeIdToTradeNameMap: Map<TradeID, string>) =
+        let predicate (key: TradeID) (value: string) =
+            value = name
+        Map.tryFindKey predicate tradeIdToTradeNameMap
+
+    let updateScopeLow(newVal : string, oldScope : (float*float)) =
+        match oldScope with
+        | (_, scopeXhigh : float) -> newVal + ";" + string scopeXhigh
+    
+    let updateScopeHigh(newVal : string, oldScope : (float*float)) =
+        match oldScope with
+        | (scopeXlow : float, _) -> string scopeXlow + ";" + newVal
+
+    let chartChange msg s = 
+        match msg with
+        | "NewTrade" -> 
+                        let correspondingID = getTradeID s eoMap
+                        match correspondingID with
+                        | Some tradeID -> dispatch <| EOChartChange (NewTrade tradeID)
+                        | None -> ()
+        | "NewItemXaxis" -> dispatch <| EOChartChange (NewItemXaxis s)
+        | "NewItemYaxis" -> dispatch <| EOChartChange (NewItemYaxis s)
+        | "NewScopeLow" ->
+                        let newScope = updateScopeLow (s, model.chart.ScopeX)
+                        dispatch <| EOChartChange (NewScopeX newScope)
+        | _ ->
+                        let newScope = updateScopeHigh (s, model.chart.ScopeX)
+                        dispatch <| EOChartChange (NewScopeX newScope)
+
+    let getTradeName() =
+        if (not (Array.isEmpty model.chart.Trades)) then eoMap.Item(model.chart.Trades.[0]) else ""
+
+    let getLowScope (oldScope : (float*float)) : float =
+        match oldScope with
+        | (scopeXlow : float, _) -> scopeXlow
+
+    let getHighScope (oldScope : (float*float)) : float=
+        match oldScope with
+        | (_, scopeXhigh : float) -> scopeXhigh
+
+    let getTradeNames () =
+        eoMap.Values |> Seq.toList
+
+    //let htmlTemplate = getTradeNames()
+        // let names = getTradeNames()
+        // sprintf "
+        // <select bind-onchange=\"${TradeName}\" style=\"width: 150px;\">
+        //     %s
+        // </select>
+        // " names
+
+    let showName (name: string) =
+        Templates.NameSelection()
+            .Name(name)
+            .Elt()
+
+    let configure() =
+        let names = getTradeNames()
+        Templates.ChartConfiguration()
+            .TradeName(string (getTradeName()), chartChange "NewTrade")
+            .Names(forEach names showName)
+            .Xaxis(itemXaxisToString model.chart.ItemX,chartChange "NewItemXaxis")
+            .Yaxis(string model.chart.ItemY,chartChange "NewItemYaxis")
+            .XaxisLow(sprintf "%.2f" (getLowScope(model.chart.ScopeX)), chartChange "NewScopeLow")
+            .XaxisHigh(sprintf "%.2f" (getHighScope(model.chart.ScopeX)), chartChange "NewScopeHigh")
+            .Elt()
+
+    // let drawChart() =
+    //     Templates.EuropeanOptionsChart()
+    //         .ChartsPlaceholder(plotLineChart model.chart)
+    //         .Elt()
+    
+    // let drawButton : Node =
+    //     button {
+    //         on.click (fun _ -> drawChart())
+
+    //         "Draw"
+    //     }
+
+    Templates.EuropeanOptionsChart()
+        .Config(configure())
+        .Elt()
+    // |> fun config -> drawChart()
+    
+
+// let chartConfigDisplay (model: Map<string,string>) dispatch =
+//     Templates.ChartConfigDisplay()
+//         .Title(text "European Options Chart Configuration")
+//         .TradeName()
+//         .Elt()
 
 let homePage (model: Model) dispatch =
 
@@ -137,11 +235,18 @@ let homePage (model: Model) dispatch =
             .EuropeanOptionsRows(forEach europeanOptions (europeanOptionRow dispatch))
             .Elt()
 
+    // let draw() =
+    //     Templates.Home()
+    //         .ChartsPlaceholder(plotLineChart model.chart)
+    //         .Elt()
+    
+
     Templates.Home()
      .SummaryPlaceholder(summary model dispatch)
      .PaymentsPlaceholder(paymentsView)
      .EuropeanOptionsPlaceholder(europeanOptionsView)
      .MarketDataPlaceholder(marketDataDisplay model.marketData dispatch)
+     .EOChartConfigPlaceholder(configureChart dispatch (model, europeanOptions))
      .ChartsPlaceholder(plotLineChart model.chart)
      .Elt()
 

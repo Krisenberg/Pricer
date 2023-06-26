@@ -19,6 +19,7 @@ type TradeChangeMsg =
     | NewOptionType of TradeID * string
 
 type EOChartChangeMsg =
+    | NewTrade of TradeID
     | NewItemXaxis of string
     | NewItemYaxis of string
     | NewScopeX of string

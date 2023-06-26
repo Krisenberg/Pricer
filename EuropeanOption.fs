@@ -25,6 +25,11 @@ let parseValuationMethod (valuationMethod: string) : ValuationMethod option =
     | "Monte Carlo" -> Some MonteCarlo
     | _ -> None
 
+let valuationMethodToString (valuationMethod : ValuationMethod) =
+    match valuationMethod with
+    | Formulas -> "Analytical"
+    | MonteCarlo -> "Monte Carlo"
+
 // Model for European Option trades.
 type EuropeanOptionRecord =
     {
@@ -168,31 +173,31 @@ type EuropeanOptionValuationModel(inputs: EuropeanOptionValuationInputs) =
         let fxRate, finalCcy = this.PrepareCurrencies()
         let value, delta = this.valuationMethods.Item((inputs.Trade.ValuationMethod, inputs.Trade.OptionType))(inputs.Trade.SpotPrice, inputs.Trade.Strike, this.drift, this.volatility)
 
-        { Value = value / fxRate; Currency = finalCcy }, delta
+        { Value = (value / fxRate); Currency = finalCcy }, delta
 
 
     member this.CalculateOtherSpot(spotPrice : float) : Money * float =
         let fxRate, finalCcy = this.PrepareCurrencies()
         let value, delta = this.valuationMethods.Item((inputs.Trade.ValuationMethod, inputs.Trade.OptionType))(spotPrice, inputs.Trade.Strike, this.drift, this.volatility)
 
-        { Value = value / fxRate; Currency = finalCcy }, delta
+        { Value = (value / fxRate); Currency = finalCcy }, delta
 
     member this.CalculateOtherStrike(strike : float) : Money * float =
         let fxRate, finalCcy = this.PrepareCurrencies()
         let value, delta = this.valuationMethods.Item((inputs.Trade.ValuationMethod, inputs.Trade.OptionType))(inputs.Trade.SpotPrice, strike, this.drift, this.volatility)
 
-        { Value = value / fxRate; Currency = finalCcy }, delta
+        { Value = (value / fxRate); Currency = finalCcy }, delta
 
     member this.CalculateOtherDrift(drift : float) : Money * float =
         let fxRate, finalCcy = this.PrepareCurrencies()
         let value, delta = this.valuationMethods.Item((inputs.Trade.ValuationMethod, inputs.Trade.OptionType))(inputs.Trade.SpotPrice, inputs.Trade.Strike, drift, this.volatility)
 
-        { Value = value / fxRate; Currency = finalCcy }, delta
+        { Value = (value / fxRate); Currency = finalCcy }, delta
 
     member this.CalculateOtherVolatility(volatility : float) : Money * float =
         let fxRate, finalCcy = this.PrepareCurrencies()
         let value, delta = this.valuationMethods.Item((inputs.Trade.ValuationMethod, inputs.Trade.OptionType))(inputs.Trade.SpotPrice, inputs.Trade.Strike, this.drift, volatility)
 
-        { Value = value / fxRate; Currency = finalCcy }, delta
+        { Value = (value / fxRate); Currency = finalCcy }, delta
     
     // member this.CalculateMonteCarlo() : Money =
