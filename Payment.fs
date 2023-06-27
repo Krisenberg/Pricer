@@ -52,13 +52,13 @@ type PaymentValuationModel(inputs: PaymentValuationInputs) =
     member this.Calculate() : Money = 
         let tradeCcy = inputs.Trade.Currency
 
-        let targetCcy = match inputs.MarketData.TryFind "valuation::baseCurrency" with
+        let targetCcy = match inputs.Data.TryFind "valuation::baseCurrency" with
                          | Some ccy -> ccy
                          | None -> tradeCcy
 
         let fxRateKey = sprintf "FX::%s%s" targetCcy tradeCcy
 
-        let fxRate = if inputs.Data.ContainsKey fxRateKey then float inputs.Data.[ fxRateKey ] else 1.0 // lookup FX rate
-        let finalCcy = if inputs.Data.ContainsKey fxRateKey then targetCcy else tradeCcy
+        let fxRate = if inputs.MarketData.ContainsKey fxRateKey then float inputs.MarketData.[ fxRateKey ] else 1.0 // lookup FX rate
+        let finalCcy = if inputs.MarketData.ContainsKey fxRateKey then targetCcy else tradeCcy
         
         { Value = (float inputs.Trade.Principal) / fxRate; Currency = finalCcy }
