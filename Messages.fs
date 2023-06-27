@@ -4,8 +4,6 @@ open Configuration
 open Model
 open Trades
 
-//this is currently payment specific, once we add other trades we will need to re-model this
-//other trades will have fields that payment doesn't have
 type TradeChangeMsg =
     | NewName of TradeID * string
     | NewPrincipal of TradeID * string
@@ -32,7 +30,8 @@ type Message =
     | RemoveTrade of TradeID
     | TradeChange of TradeChangeMsg
     | DrawChart
-    | RecalculateAll
+    | RecalculateAllPayments
+    | RecalculateAllEO
     | RecalculateTrade of TradeID
     | EOChartChange of EOChartChangeMsg
     | LoadData

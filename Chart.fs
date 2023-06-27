@@ -56,7 +56,7 @@ type ChartData =
   }
   static member Default =
       { Series = [||]
-        Title = "Title"
+        Title = "Default Trade"
         ItemX = SpotPrice
         ItemY = Value
         Trades = [||]
@@ -64,9 +64,6 @@ type ChartData =
         Data = Map.empty
         MarketData = Map.empty
       }
-
-//TODO: remove after we add non-dummy chart
-//how to construct a chart:
 
 let parseItemXaxis (item : string) =
   match item with
@@ -92,13 +89,13 @@ let itemXaxisToString (item : itemsXaxis) =
 let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, data, marketData) : ChartData =
     let scopeXlow, scopeXhigh = scopeX
 
-    let makeSeries(eoTrade : EuropeanOptionRecord) : Series =
-      let name = eoTrade.TradeName
+    let makeSeries(eo : EuropeanOptionRecord) : Series =
+      let name = eo.TradeName
 
       let valuationModel = 
         let inputs = 
           {
-            Trade = eoTrade
+            Trade = eo
             Data = data
             MarketData = marketData
           }
@@ -107,23 +104,24 @@ let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, 
       let getMoneyValue (money : Money) = money.Value
       let getMoneyCurr (money : Money) = money.Currency
 
-      let calcFunc = 
-        match (itemXaxis, itemYaxis) with
-          | (SpotPrice, Value) -> valuationModel.CalculateOtherSpot >> fst >> getMoneyValue
-          | (StrikePrice, Value) -> valuationModel.CalculateOtherStrike >> fst >> getMoneyValue
-          | (Volatility, Value) -> valuationModel.CalculateOtherVolatility >> fst >> getMoneyValue
-          | (Drift, Value) -> valuationModel.CalculateOtherDrift >> fst >> getMoneyValue
-          | (SpotPrice, Delta) -> valuationModel.CalculateOtherSpot >> snd
-          | (StrikePrice, Delta) -> valuationModel.CalculateOtherStrike >> snd
-          | (Volatility, Delta) -> valuationModel.CalculateOtherVolatility >> snd
-          | (Drift, Delta) -> valuationModel.CalculateOtherDrift >> snd
+      let calcFunc =
+        match itemYaxis with
+          | Value -> valuationModel.Calculate >> fst >> getMoneyValue
+          | Delta -> valuationModel.Calculate >> snd
+
+      let args xAxisArg =
+        match itemXaxis with
+          | SpotPrice -> (xAxisArg, eo.Strike, eo.Drift, eo.Volatility, eo.Expiry)
+          | StrikePrice -> (eo.SpotPrice, xAxisArg, eo.Drift, eo.Volatility, eo.Expiry)
+          | Drift -> (eo.SpotPrice, eo.Strike, xAxisArg, eo.Volatility, eo.Expiry)
+          | Volatility -> (eo.SpotPrice, eo.Strike, eo.Drift, xAxisArg, eo.Expiry)
 
       //step 1: have a sequence of values (x,y)
       let series =
         let step = (scopeXhigh - scopeXlow) / 200.
         seq {
           for i in scopeXlow .. step .. scopeXhigh do
-            yield float i, calcFunc (float i)
+            yield float i, args (float i) |> calcFunc
         }
 
       //step 2: map those to ChartItem
@@ -148,39 +146,4 @@ let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, 
         ScopeX = scopeX
         Data = data
         MarketData = marketData
-    }
-
-
-let mkDummyChart () : ChartData = 
-
-    let r = Random()
-    let mkDummySeries () : Series = 
-      let predefinedChartFunctions = [| (fun x -> 20.0*(sin x)); (fun x -> x); (fun x -> x*x) |] 
-      let multiplier = r.NextDouble()
-      let mapFun = predefinedChartFunctions.[ r.Next(predefinedChartFunctions.Length) ]
-      let name = sprintf "Test series %0.2f" multiplier
-
-      //step 1: have a sequence of values (x,y)
-      let series =
-           seq {
-             for i in 1 .. 10 do
-               yield float i,mapFun(multiplier * float i) 
-           }
-
-      //step 2: map those to ChartItem
-      let values =
-            series
-            |> Seq.map (fun (x,y) -> {XValue = x; YValue = y})
-            |> Array.ofSeq
-
-      //step 3: customize the series, change color, name etc
-      { Series.Default with
-            Values = values
-            SeriesName = name
-      }
-
-    //step 4: add or replace series on existing chart
-    { ChartData.Default with 
-        Series = [|mkDummySeries (); mkDummySeries () |]
-        Title = "Dummy Demo Chart"
     }

@@ -100,8 +100,8 @@ let paymentRow dispatch (tradeId, p : PaymentRecord) =
 let europeanOptionRow dispatch (tradeId, eo : EuropeanOptionRecord) =
     let value = eo.Value |> Option.map (string) |> Option.defaultValue "" 
     let delta = match eo.Delta with
-                    | Some delta -> System.Math.Round (delta, 2) |> string
-                    | None -> ""
+                        | Some delta -> System.Math.Round (delta, 2) |> string
+                        | None -> ""
 
     let tradeChange msg s = dispatch <| TradeChange (msg (tradeId,s))
 
@@ -170,14 +170,6 @@ let configureChart dispatch (model : Model, europeanOptions : list<TradeID * Eur
     let getTradeNames () =
         eoMap.Values |> Seq.toList
 
-    //let htmlTemplate = getTradeNames()
-        // let names = getTradeNames()
-        // sprintf "
-        // <select bind-onchange=\"${TradeName}\" style=\"width: 150px;\">
-        //     %s
-        // </select>
-        // " names
-
     let showName (name: string) =
         Templates.NameSelection()
             .Name(name)
@@ -194,29 +186,10 @@ let configureChart dispatch (model : Model, europeanOptions : list<TradeID * Eur
             .XaxisHigh(sprintf "%.2f" (getHighScope(model.chart.ScopeX)), chartChange "NewScopeHigh")
             .Elt()
 
-    // let drawChart() =
-    //     Templates.EuropeanOptionsChart()
-    //         .ChartsPlaceholder(plotLineChart model.chart)
-    //         .Elt()
-    
-    // let drawButton : Node =
-    //     button {
-    //         on.click (fun _ -> drawChart())
-
-    //         "Draw"
-    //     }
-
     Templates.EuropeanOptionsChart()
         .Config(configure())
         .Elt()
-    // |> fun config -> drawChart()
-    
 
-// let chartConfigDisplay (model: Map<string,string>) dispatch =
-//     Templates.ChartConfigDisplay()
-//         .Title(text "European Options Chart Configuration")
-//         .TradeName()
-//         .Elt()
 
 let homePage (model: Model) dispatch =
 
@@ -225,20 +198,17 @@ let homePage (model: Model) dispatch =
     let paymentsView = 
         Templates.Payments()
             .AddPayment(fun _ -> dispatch AddPayment)
-            .RecalculateAll(fun _ -> dispatch RecalculateAll)
+            // .RecalculateAll(fun _ -> dispatch RecalculateAll)
+            .RecalculateAll(fun _ -> dispatch RecalculateAllPayments)
             .PaymentRows(forEach payments (paymentRow dispatch))
             .Elt()
     let europeanOptionsView = 
         Templates.EuropeanOptions()
             .AddEuropeanOption(fun _ -> dispatch AddEuropeanOption)
-            .RecalculateAll(fun _ -> dispatch RecalculateAll)
+            // .RecalculateAll(fun _ -> dispatch RecalculateAll)
+            .RecalculateAll(fun _ -> dispatch RecalculateAllEO)
             .EuropeanOptionsRows(forEach europeanOptions (europeanOptionRow dispatch))
             .Elt()
-
-    // let draw() =
-    //     Templates.Home()
-    //         .ChartsPlaceholder(plotLineChart model.chart)
-    //         .Elt()
     
 
     Templates.Home()

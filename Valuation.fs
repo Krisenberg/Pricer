@@ -21,7 +21,7 @@ let valuateTrade config marketData (trade : Trade) : Trade =
           MarketData = marketData
         }
       let vm = EuropeanOptionValuationModel(inputs)
-      let value, delta = vm.Calculate()
+      let value, delta = vm.Calculate(eo.SpotPrice, eo.Strike, eo.Drift, eo.Volatility, eo.Expiry)
       EuropeanOption { eo with 
                           Value = Some <| value
                           Delta = Some <| delta}

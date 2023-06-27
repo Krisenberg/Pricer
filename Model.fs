@@ -40,7 +40,7 @@ type Model =
           trades = Map.empty
           marketData = Map.empty
           configuration = Map.empty
-          chart = makeEuropeanOptionsChart (SpotPrice, Value, Array.empty,Array.empty,(50.,300.), Map.empty, Map.empty)//TODO: change to some actual data
+          chart = ChartData.Default
           showChart = false
           error = None
       }

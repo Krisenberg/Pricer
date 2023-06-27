@@ -18,8 +18,8 @@ let changeTrade (trades : Map<TradeID,UITrade>) id f =
         | Some t -> 
             match f t with
             | Some t' -> Map.add id t' trades, Cmd.none
-            | None -> trades, Cmd.ofMsg <| Warning (sprintf "could not update trade %s (%A)" t.Name id)
-        | None -> trades, Cmd.ofMsg <| Warning (sprintf "could not find trade %A" id)
+            | None -> trades, Cmd.ofMsg <| Warning (sprintf "Could not update trade %s (%A)" t.Name id)
+        | None -> trades, Cmd.ofMsg <| Warning (sprintf "Could not find trade %A" id)
 
 let tradeChangeUpdate (model : Model) = function
     | NewName (id,name) ->
@@ -63,11 +63,6 @@ let tradeChangeUpdate (model : Model) = function
                 (Trades.tryMap ( function
                                 | Payment p -> Some <| Payment { p with Currency = ccy}
                                 | EuropeanOption eo -> Some <| EuropeanOption { eo with Currency = ccy}))
-    // | NewCurrency (id,ccy) ->
-    //     changeTrade model.trades id 
-    //             (Trades.tryMap ( function
-    //                             | Payment p -> Some <| Payment { p with Currency = ccy}
-    //                             | EuropeanOption eo -> Some <| EuropeanOption { eo with BaseCurrency = ccy}))
 
     | NewSpotPrice (id,spot) ->
         changeTrade model.trades id 
@@ -127,7 +122,6 @@ let tradeChangeUpdate (model : Model) = function
                                             EuropeanOption { eo with OptionType = optType})
                                 | _ -> None))
 
-
 let findEOTrade (trades : Map<TradeID,UITrade>) id =
         match Map.tryFind id trades with
         | Some t -> 
@@ -146,25 +140,18 @@ let changeChart (model : Model, newTrades : Map<TradeID,UITrade>) (id : TradeID)
         model.chart
 
 
-let tradeOnChartChangeUpdate (model : Model, newTrades) = function
-    | NewName (id,name) -> id |> changeChart(model, newTrades)
-    | NewPrincipal (id,principal) -> id |> changeChart(model, newTrades)
-    | NewExpiry (id,expiry) -> id |> changeChart(model, newTrades)
-    | NewCurrency (id,ccy) -> id |> changeChart(model, newTrades)
-    | NewSpotPrice (id,spot) -> id |> changeChart(model, newTrades)
-    | NewStrike (id,strike) -> id |> changeChart(model, newTrades)
-    | NewDrift (id,drift) -> id |> changeChart(model, newTrades)
-    | NewVolatility (id,volatility) -> id |> changeChart(model, newTrades)
-    | NewValuationMethod (id,valuationMethod) -> id |> changeChart(model, newTrades)
-    | NewOptionType (id,optionType) -> id |> changeChart(model, newTrades)
+// let tradeOnChartChangeUpdate (model : Model, newTrades) = function
+//     | NewName (id,_) -> id |> changeChart(model, newTrades)
+//     | NewPrincipal (id,_) -> id |> changeChart(model, newTrades)
+//     | NewExpiry (id,_) -> id |> changeChart(model, newTrades)
+//     | NewCurrency (id,_) -> id |> changeChart(model, newTrades)
+//     | NewSpotPrice (id,_) -> id |> changeChart(model, newTrades)
+//     | NewStrike (id,_) -> id |> changeChart(model, newTrades)
+//     | NewDrift (id,_) -> id |> changeChart(model, newTrades)
+//     | NewVolatility (id,_) -> id |> changeChart(model, newTrades)
+//     | NewValuationMethod (id,_) -> id |> changeChart(model, newTrades)
+//     | NewOptionType (id,_) -> id |> changeChart(model, newTrades)
 
-
-// let getTradesArray (trades : Map<_,UITrade>) =
-//     onlyEuropeanOptions(trades) |> List.map (fun (_, eoRecord) -> eoRecord) |> Array.ofList
-//     //model.trades |> Map.toSeq |> Seq.map (fun (_, uiTrade) -> uiTrade.trade) |> Array.ofSeq
-
-// let getTradeWithName (trades: Map<_,UITrade>, newTradeName : string) =
-//     onlyEuropeanOptions(trades) |> List.map (fun (_, eoRecord) -> eoRecord) |> List.find (fun eoRecord -> eoRecord.TradeName = newTradeName)
 
 let chartChangeUpdate (model : Model) = function
     | NewTrade tradeID->
@@ -176,24 +163,36 @@ let chartChangeUpdate (model : Model) = function
                                     match (Array.isEmpty model.chart.Trades) with
                                     | true ->
                                                 let itemXaxis = parseItemXaxis(item)
-                                                match itemXaxis with
-                                                | Some Drift | Some Volatility -> itemXaxis
-                                                                                |> Option.map (fun item ->
-                                                                                makeEuropeanOptionsChart(item, model.chart.ItemY, [||], [||],(0.00,50.00), model.configuration, model.marketData))
-                                                | _ -> itemXaxis
-                                                       |> Option.map (fun item ->
-                                                       makeEuropeanOptionsChart(item, model.chart.ItemY, [||], [||],model.chart.ScopeX, model.configuration, model.marketData))
+                                                let args (item) =
+                                                    match itemXaxis with
+                                                    | Some Drift | Some Volatility ->
+                                                        match model.chart.ItemX with
+                                                        | Drift | Volatility -> (item, model.chart.ItemY, [||], [||],model.chart.ScopeX, model.configuration, model.marketData)
+                                                        | _ -> (item, model.chart.ItemY, [||], [||],(0.00,40.00), model.configuration, model.marketData)
+                                                    | _ ->
+                                                        match model.chart.ItemX with
+                                                        | Drift | Volatility -> (item, model.chart.ItemY, [||], [||],(0.00,300.00), model.configuration, model.marketData)
+                                                        | _ -> (item, model.chart.ItemY, [||], [||],model.chart.ScopeX, model.configuration, model.marketData)
+                                                itemXaxis
+                                                |> Option.map (fun item ->
+                                                makeEuropeanOptionsChart(args(item)))
+                                                
                                     | false ->  let itemXaxis = parseItemXaxis(item)
-                                                match itemXaxis with
-                                                | Some Drift | Some Volatility -> 
-                                                                                let eoRecordOpt = findEOTrade model.trades model.chart.Trades[0]
-                                                                                (eoRecordOpt, itemXaxis)
-                                                                                |> Utils.optionMapTuple (fun (eoRecord, item) ->
-                                                                                makeEuropeanOptionsChart(item, model.chart.ItemY, [|eoRecord|], model.chart.Trades,(0.00,50.00), model.configuration, model.marketData))
-                                                | _ -> let eoRecordOpt = findEOTrade model.trades model.chart.Trades[0]
-                                                       (eoRecordOpt, itemXaxis)
-                                                       |> Utils.optionMapTuple (fun (eoRecord, item) ->
-                                                       makeEuropeanOptionsChart(item, model.chart.ItemY, [|eoRecord|], model.chart.Trades,model.chart.ScopeX, model.configuration, model.marketData))
+                                                let args (record, item) =
+                                                    match itemXaxis with
+                                                    | Some Drift | Some Volatility ->
+                                                        match model.chart.ItemX with
+                                                        | Drift | Volatility -> (item, model.chart.ItemY, [|record|], model.chart.Trades,model.chart.ScopeX, model.configuration, model.marketData)
+                                                        | _ -> (item, model.chart.ItemY, [|record|], model.chart.Trades,(0.00,40.0), model.configuration, model.marketData)
+                                                    | _ ->
+                                                        match model.chart.ItemX with
+                                                        | Drift | Volatility -> (item, model.chart.ItemY, [|record|], model.chart.Trades,(0.00,300.0), model.configuration, model.marketData)
+                                                        | _ -> (item, model.chart.ItemY, [|record|], model.chart.Trades,model.chart.ScopeX, model.configuration, model.marketData)
+                                                let eoRecordOpt = findEOTrade model.trades model.chart.Trades[0]
+                                                (eoRecordOpt, itemXaxis)
+                                                |> Utils.optionMapTuple (fun (eoRecord, item) ->
+                                                makeEuropeanOptionsChart(args(eoRecord, item)))
+                                                
     | NewItemYaxis item -> 
                                     match (Array.isEmpty model.chart.Trades) with
                                     | true ->
@@ -223,18 +222,32 @@ let chartChangeUpdate (model : Model) = function
                                                 makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, [|eoRecord|],model.chart.Trades, (xLow, xHigh), model.configuration, model.marketData))
 
 
-let getIDfromMSG (msg : TradeChangeMsg) =
+// let getIDfromMSG (msg : TradeChangeMsg) =
+//     match msg with
+//     | NewName (tradeID, _) -> tradeID
+//     | NewPrincipal (tradeID, _) -> tradeID
+//     | NewCurrency (tradeID, _) -> tradeID
+//     | NewExpiry (tradeID, _) -> tradeID
+//     | NewSpotPrice (tradeID, _) -> tradeID
+//     | NewStrike (tradeID, _) -> tradeID
+//     | NewDrift (tradeID, _) -> tradeID
+//     | NewVolatility (tradeID, _) -> tradeID
+//     | NewValuationMethod (tradeID, _) -> tradeID
+//     | NewOptionType (tradeID, _) -> tradeID
+
+let mapIDwithFunc (msg : TradeChangeMsg) func =
     match msg with
-    | NewName (tradeID, _) -> tradeID
-    | NewPrincipal (tradeID, _) -> tradeID
-    | NewCurrency (tradeID, _) -> tradeID
-    | NewExpiry (tradeID, _) -> tradeID
-    | NewSpotPrice (tradeID, _) -> tradeID
-    | NewStrike (tradeID, _) -> tradeID
-    | NewDrift (tradeID, _) -> tradeID
-    | NewVolatility (tradeID, _) -> tradeID
-    | NewValuationMethod (tradeID, _) -> tradeID
-    | NewOptionType (tradeID, _) -> tradeID
+    | NewName (tradeID, _) -> tradeID |> func
+    | NewPrincipal (tradeID, _) -> tradeID |> func
+    | NewCurrency (tradeID, _) -> tradeID |> func
+    | NewExpiry (tradeID, _) -> tradeID |> func
+    | NewSpotPrice (tradeID, _) -> tradeID |> func
+    | NewStrike (tradeID, _) -> tradeID |> func
+    | NewDrift (tradeID, _) -> tradeID |> func
+    | NewVolatility (tradeID, _) -> tradeID |> func
+    | NewValuationMethod (tradeID, _) -> tradeID |> func
+    | NewOptionType (tradeID, _) -> tradeID |> func
+
 let update (http: HttpClient) message model =
     match message with
     | SetPage page ->
@@ -250,18 +263,19 @@ let update (http: HttpClient) message model =
     | RemoveTrade(tradeId) ->
         let newTrades = Map.remove tradeId model.trades
         if (not (Array.isEmpty model.chart.Trades) && model.chart.Trades.[0] = tradeId) then
-            { model with 
+            { model with
                 trades = newTrades
                 chart = makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, [||], [||], model.chart.ScopeX, model.configuration, model.marketData)
             }, Cmd.none
         else
-            { model with 
+            { model with
                 trades = newTrades
             }, Cmd.none
     | TradeChange msg ->
         let newTrades,cmd = tradeChangeUpdate model msg
-        let newChart = tradeOnChartChangeUpdate (model, newTrades) msg
-        let tradeID = getIDfromMSG msg
+        // let newChart = tradeOnChartChangeUpdate (model, newTrades) msg
+        let newChart = mapIDwithFunc msg (fun id -> changeChart(model, newTrades) id)
+        let tradeID =  mapIDwithFunc msg (fun id -> id)
         { model with 
             trades = newTrades
             chart = newChart
@@ -275,7 +289,8 @@ let update (http: HttpClient) message model =
     | MarketDataChange (key,value) ->
         let md = model.marketData
         let md' = Map.add key value md
-        { model with marketData = md'}, Cmd.ofMsg RecalculateAll
+        // { model with marketData = md'}, Cmd.ofMsg RecalculateAll
+        { model with marketData = md'}, Cmd.batch [Cmd.ofMsg RecalculateAllPayments; Cmd.ofMsg RecalculateAllEO]
     | GotMarketData response ->
         let c = response |> 
                 Array.collect (fun cat -> 
@@ -298,10 +313,42 @@ let update (http: HttpClient) message model =
                             sprintf "%s::%s" cat.Category k, v))
                 |> Map.ofArray
         { model with configuration = c }, Cmd.none
-    | RecalculateAll ->
+    // | RecalculateAll ->
+    //     let trades =
+    //          model.trades
+    //          |> Map.map (fun _ -> Trades.map <| valuateTrade model.configuration model.marketData)
+    //     if (not (Array.isEmpty model.chart.Trades)) then
+    //         { model with 
+    //             trades = trades
+    //             chart = model.chart.Trades.[0] |> changeChart(model, trades)
+    //         }, Cmd.none
+    //     else
+    //         { model with 
+    //             trades = trades
+    //         }, Cmd.none
+    | RecalculateAllPayments ->
         let trades =
              model.trades
-             |> Map.map (fun _ -> Trades.map <| valuateTrade model.configuration model.marketData)
+             |> Map.map (fun (ID : TradeID) (uiTrade : UITrade)  -> 
+                            match uiTrade.trade with
+                            | Payment _-> Trades.map (valuateTrade model.configuration model.marketData) uiTrade
+                            | _ -> uiTrade)
+        if (not (Array.isEmpty model.chart.Trades)) then
+            { model with 
+                trades = trades
+                chart = model.chart.Trades.[0] |> changeChart(model, trades)
+            }, Cmd.none
+        else
+            { model with 
+                trades = trades
+            }, Cmd.none
+    | RecalculateAllEO ->
+        let trades =
+             model.trades
+             |> Map.map (fun (ID : TradeID) (uiTrade : UITrade)  -> 
+                            match uiTrade.trade with
+                            | EuropeanOption _-> Trades.map (valuateTrade model.configuration model.marketData) uiTrade
+                            | _ -> uiTrade)
         if (not (Array.isEmpty model.chart.Trades)) then
             { model with 
                 trades = trades
