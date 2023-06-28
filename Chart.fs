@@ -104,14 +104,7 @@ let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, 
         EuropeanOptionValuationModel(inputs)
 
       let getMoneyValue (money : Money) = money.Value
-      let convertFloatToDateTime (daysFloat : float) : DateTime = 
-        let today = DateTime.Now.Date
-        let days = int daysFloat
-        let time = daysFloat - float days
-        today.AddDays(float days) + TimeSpan.FromDays(time)
-
-      let convertIntToDateTime (months : int) : DateTime = (DateTime.Today.AddMonths(months))
-
+      let convertIntToDateTime (months : int) : DateTime = (DateTime.Now.AddMonths(months))
 
       let calcFunc =
         match itemYaxis with
@@ -132,8 +125,8 @@ let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, 
         match itemXaxis with
         | Time -> seq {
             for i in (int scopeXlow) .. (int scopeXhigh) do
-              // yield float i, args (float i) |> calcFunc
-              yield float i, 100.0
+              yield float i, args (float i) |> calcFunc
+              // yield float i, ((float i) * 100.0)
           }
         | _ -> seq {
             for i in scopeXlow .. step .. scopeXhigh do

@@ -52,18 +52,30 @@ let plotLineChart (data : ChartData) =
             "Padding"=>20.0
             "Min" => fst data.ScopeX
             "Max" => snd data.ScopeX
+            "Visible" => true
         }
     let Yaxis =
         let title = comp<RadzenAxisTitle> { "Text" => data.Title}
-        comp<RadzenValueAxis>{ attr.fragment "ChildContent" title }
+        comp<RadzenValueAxis>{
+            "Visible" => true
+            attr.fragment "ChildContent" title 
+        }
+
+    let legend = comp<RadzenLegend> { "Position" => LegendPosition.Bottom }
+    
     let childContent = 
           concat {
               for series in data.Series do
                 mkSeriesComponent series
               Xaxis
               Yaxis
+              legend
           }
-    comp<RadzenChart> { attr.fragment "ChildContent" childContent }
+    
+    comp<RadzenChart> {
+        "Style" => "width: 1300px; height: 450px"
+        attr.fragment "ChildContent" childContent
+    }
 
 let summary (model: Model) dispatch =
     let groupedByCCy =
