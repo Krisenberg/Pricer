@@ -127,7 +127,7 @@
     </div>
   </template>
 
-  <template id="ChartConfigDisplay">
+  <!-- <template id="ChartConfigDisplay">
     <div class="content">
     <h1 class="title">${Title}</h1>
     <table class="rz-grid-table">
@@ -162,7 +162,7 @@
         </tr>
         <tr>
           <td>X-axis limit (low)</td>
-          <!-- <td><input bind-onchange="${XaxisLow}" style="width: 50px;"/></td> -->
+          <td><input bind-onchange="${XaxisLow}" style="width: 50px;"/></td>
           <input type="text" value="${XaxisLow}" oninput="app.state.XaxisLow = event.target.value" style="width: 50px;" />
         </tr>
         <tr>
@@ -172,7 +172,7 @@
       </tbody>
     </table>
     </div>
-  </template>
+  </template> -->
 
   <template id="EuropeanOptionsChart">
     <div class="content">
@@ -204,6 +204,7 @@
                     <option value="Strike Price">Strike</option>
                     <option value="Volatility">Volatility</option>
                     <option value="Drift">Drift</option>
+                    <option value="Time">Time (Months)</option>
                 </select>
               </td>
               <td>

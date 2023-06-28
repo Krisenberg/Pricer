@@ -38,6 +38,7 @@ type itemsXaxis =
   | StrikePrice
   | Volatility
   | Drift
+  | Time
 
 type itemsYaxis =
   | Value
@@ -71,7 +72,7 @@ let parseItemXaxis (item : string) =
   | "Strike Price" -> Some StrikePrice
   | "Volatility" -> Some Volatility
   | "Drift" -> Some Drift
-  | _ -> None
+  | _ -> Some Time
 
 let parseItemYaxis (item : string) =
   match item with
@@ -85,6 +86,7 @@ let itemXaxisToString (item : itemsXaxis) =
   | StrikePrice -> "Strike Price"
   | Volatility -> "Volatility"
   | Drift -> "Drift"
+  | Time -> "Time"
 
 let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, data, marketData) : ChartData =
     let scopeXlow, scopeXhigh = scopeX
@@ -102,7 +104,7 @@ let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, 
         EuropeanOptionValuationModel(inputs)
 
       let getMoneyValue (money : Money) = money.Value
-      let getMoneyCurr (money : Money) = money.Currency
+      let convertIntToDateTime (months : int) : DateTime = (DateTime.Now.AddMonths(months))
 
       let calcFunc =
         match itemYaxis with
@@ -115,14 +117,21 @@ let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, 
           | StrikePrice -> (eo.SpotPrice, xAxisArg, eo.Drift, eo.Volatility, eo.Expiry)
           | Drift -> (eo.SpotPrice, eo.Strike, xAxisArg, eo.Volatility, eo.Expiry)
           | Volatility -> (eo.SpotPrice, eo.Strike, eo.Drift, xAxisArg, eo.Expiry)
+          | Time -> (eo.SpotPrice, eo.Strike, eo.Drift, eo.Volatility, (convertIntToDateTime (int <| xAxisArg)))
 
       //step 1: have a sequence of values (x,y)
       let series =
         let step = (scopeXhigh - scopeXlow) / 200.
-        seq {
-          for i in scopeXlow .. step .. scopeXhigh do
-            yield float i, args (float i) |> calcFunc
-        }
+        match itemXaxis with
+        | Time -> seq {
+            for i in (int scopeXlow) .. (int scopeXhigh) do
+              yield float i, args (float i) |> calcFunc
+              // yield float i, ((float i) * 100.0)
+          }
+        | _ -> seq {
+            for i in scopeXlow .. step .. scopeXhigh do
+              yield float i, args (float i) |> calcFunc
+          }
 
       //step 2: map those to ChartItem
       let values =
@@ -136,10 +145,11 @@ let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, 
             SeriesName = name
       }
 
+    let title = "Chart: " + (string itemYaxis) + "(" + itemXaxisToString(itemXaxis) + ")"
     //step 4: add or replace series on existing chart
     { ChartData.Default with 
         Series = Array.map makeSeries eoTrade
-        Title = "Chart"
+        Title = title
         ItemX = itemXaxis
         ItemY = itemYaxis
         Trades = eoTradeID
