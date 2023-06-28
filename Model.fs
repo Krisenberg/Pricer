@@ -16,6 +16,7 @@ type UITrade =
           match this.trade with
           | Payment p -> p.TradeName
           | EuropeanOption eo -> eo.TradeName
+          | AsianOption ao -> ao.TradeName
 
 /// Routing endpoints definition.
 type Page =
@@ -71,5 +72,11 @@ module Trades =
     let onlyEuropeanOptions (trades : Map<_,UITrade>) =
       trades |> choose (fun t -> match t.trade with 
                                   | EuropeanOption eo -> Some <| (t.id,eo)
+                                  | _ -> None
+                        )
+    
+    let onlyAsianOptions (trades : Map<_,UITrade>) =
+      trades |> choose (fun t -> match t.trade with 
+                                  | AsianOption ao -> Some <| (t.id,ao)
                                   | _ -> None
                         )

@@ -8,6 +8,7 @@
     <Compile Include="Utils.fs" />
     <Compile Include="Money.fs" />
     <Compile Include="Configuration.fs" />
+    <Compile Include="AsianOption.fs" />
     <Compile Include="EuropeanOption.fs" />
     <Compile Include="Payment.fs" />
     <Compile Include="Trades.fs" />

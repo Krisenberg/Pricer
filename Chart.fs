@@ -104,7 +104,8 @@ let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, 
         EuropeanOptionValuationModel(inputs)
 
       let getMoneyValue (money : Money) = money.Value
-      let convertIntToDateTime (months : int) : DateTime = (DateTime.Now.AddMonths(months))
+      // let convertIntToDateTime (months : int) : DateTime = (DateTime.Now.AddMonths(months))
+      let convertIntToDateTime (days : float) : DateTime = (DateTime.Now.AddDays(days))
 
       let calcFunc =
         match itemYaxis with
@@ -117,21 +118,25 @@ let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, 
           | StrikePrice -> (eo.SpotPrice, xAxisArg, eo.Drift, eo.Volatility, eo.Expiry)
           | Drift -> (eo.SpotPrice, eo.Strike, xAxisArg, eo.Volatility, eo.Expiry)
           | Volatility -> (eo.SpotPrice, eo.Strike, eo.Drift, xAxisArg, eo.Expiry)
-          | Time -> (eo.SpotPrice, eo.Strike, eo.Drift, eo.Volatility, (convertIntToDateTime (int <| xAxisArg)))
+          | Time -> (eo.SpotPrice, eo.Strike, eo.Drift, eo.Volatility, (convertIntToDateTime (xAxisArg)))
 
       //step 1: have a sequence of values (x,y)
       let series =
         let step = (scopeXhigh - scopeXlow) / 200.
         match itemXaxis with
         | Time -> seq {
-            for i in (int scopeXlow) .. (int scopeXhigh) do
-              yield float i, args (float i) |> calcFunc
+            for i in scopeXlow .. step .. scopeXhigh do
+              yield float i, args (30.0 * (float i)) |> calcFunc
               // yield float i, ((float i) * 100.0)
           }
         | _ -> seq {
             for i in scopeXlow .. step .. scopeXhigh do
               yield float i, args (float i) |> calcFunc
           }
+        // seq {
+        //     for i in scopeXlow .. step .. scopeXhigh do
+        //       yield float i, args (float i) |> calcFunc
+        //   }
 
       //step 2: map those to ChartItem
       let values =

@@ -166,7 +166,7 @@ type EuropeanOptionValuationModel(inputs: EuropeanOptionValuationInputs) =
     member this.parseRunsNumber() =
 
         let runs = 
-            match inputs.Data.TryFind "monteCarlo::runs" with
+            match inputs.Data.TryFind "monteCarlo::EOruns" with
             | Some number -> number
             | None -> "1000"
         

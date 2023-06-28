@@ -8,6 +8,7 @@ open Model
 open Money
 open Payment
 open EuropeanOption
+open AsianOption
 open Radzen.Blazor
 open System.Collections.Generic
 open Trades
@@ -85,6 +86,7 @@ let summary (model: Model) dispatch =
             match x.trade with
             | Payment p -> p.Value
             | EuropeanOption eo -> eo.Value
+            | AsianOption ao -> ao.Value
             )
         |> Seq.groupBy (fun m -> m.Currency)
     let summaryRow (ccy,values : Money seq) =
@@ -125,16 +127,40 @@ let europeanOptionRow dispatch (tradeId, eo : EuropeanOptionRecord) =
         .Volatility(sprintf "%.2f" eo.Volatility, tradeChange NewVolatility)
         .Expiry(sprintf "%A" eo.Expiry, tradeChange NewExpiry)
         .Currency(eo.Currency, tradeChange NewCurrency)
-        .ValuationMethod(valuationMethodToString eo.ValuationMethod, tradeChange NewValuationMethod)
+        .ValuationMethod(EuropeanOption.valuationMethodToString eo.ValuationMethod, tradeChange NewValuationMethod)
         .OptionType(string eo.OptionType, tradeChange NewOptionType)
         .Value(value)
         .Delta(delta)
         .Delete(fun e -> dispatch (RemoveTrade tradeId))
         .Elt()
 
+let asianOptionRow dispatch (tradeId, ao : AsianOptionRecord) =
+    let value = ao.Value |> Option.map (string) |> Option.defaultValue ""
+    let strike =
+        match ao.StrikeType with
+        | Fixed -> sprintf "%.2f" ao.Strike
+        | Floating -> sprintf "%s" "---" 
+
+    let tradeChange msg s = dispatch <| TradeChange (msg (tradeId,s))
+
+    Templates.AsianOptionsRows()
+        .Name(ao.TradeName,tradeChange NewName)
+        .Spot(sprintf "%.2f" ao.SpotPrice,tradeChange NewSpotPrice)
+        .Strike(strike,tradeChange NewStrike)
+        .Drift(sprintf "%.2f" ao.Drift, tradeChange NewDrift)
+        .Volatility(sprintf "%.2f" ao.Volatility, tradeChange NewVolatility)
+        .Expiry(sprintf "%A" ao.Expiry, tradeChange NewExpiry)
+        .Currency(ao.Currency, tradeChange NewCurrency)
+        .StrikeType(AsianOption.strikeTypeToString ao.StrikeType, tradeChange NewStrikeType)
+        .ValuationMethod(AsianOption.valuationMethodToString ao.ValuationMethod, tradeChange NewValuationMethod)
+        .OptionType(string ao.OptionType, tradeChange NewOptionType)
+        .Value(value)
+        .Delete(fun e -> dispatch (RemoveTrade tradeId))
+        .Elt()
+
 let configureChart dispatch (model : Model, europeanOptions : list<TradeID * EuropeanOptionRecord>)=
     let initialMap = Map.empty
-    let addToMap map (tradeID, europeanOptionRecord) =
+    let addToMap map (tradeID, europeanOptionRecord : EuropeanOptionRecord) =
         let tradeName = europeanOptionRecord.TradeName
         Map.add tradeID tradeName map
     let eoMap = List.fold addToMap initialMap europeanOptions 
@@ -207,6 +233,8 @@ let homePage (model: Model) dispatch =
 
     let payments = onlyPayments model.trades
     let europeanOptions = onlyEuropeanOptions model.trades
+    let asianOptions = onlyAsianOptions model.trades
+
     let paymentsView = 
         Templates.Payments()
             .AddPayment(fun _ -> dispatch AddPayment)
@@ -221,12 +249,20 @@ let homePage (model: Model) dispatch =
             .RecalculateAll(fun _ -> dispatch RecalculateAllEO)
             .EuropeanOptionsRows(forEach europeanOptions (europeanOptionRow dispatch))
             .Elt()
+    let asianOptionsView = 
+        Templates.AsianOptions()
+            .AddAsianOption(fun _ -> dispatch AddAsianOption)
+            // .RecalculateAll(fun _ -> dispatch RecalculateAll)
+            .RecalculateAll(fun _ -> dispatch RecalculateAllAO)
+            .AsianOptionsRows(forEach asianOptions (asianOptionRow dispatch))
+            .Elt()
     
 
     Templates.Home()
      .SummaryPlaceholder(summary model dispatch)
      .PaymentsPlaceholder(paymentsView)
      .EuropeanOptionsPlaceholder(europeanOptionsView)
+     .AsianOptionsPlaceholder(asianOptionsView)
      .MarketDataPlaceholder(marketDataDisplay model.marketData dispatch)
      .EOChartConfigPlaceholder(configureChart dispatch (model, europeanOptions))
      .DrawChart(fun _ -> dispatch DrawChart)

@@ -6,6 +6,7 @@ open Messages
 open Model
 open Payment
 open EuropeanOption
+open AsianOption
 open Chart
 open System
 open System.Net.Http
@@ -27,6 +28,7 @@ let tradeChangeUpdate (model : Model) = function
                 (Trades.tryMap ( function
                                 | Payment p -> Some <| Payment { p with TradeName = name}
                                 | EuropeanOption eo -> Some <| EuropeanOption { eo with TradeName = name}
+                                | AsianOption ao -> Some <| AsianOption { ao with TradeName = name}
                             )
             )
 
@@ -55,6 +57,11 @@ let tradeChangeUpdate (model : Model) = function
                                     |> Utils.ofBool
                                     |> Option.map (fun expiry ->
                                             EuropeanOption { eo with Expiry = expiry})
+                                | AsianOption ao -> 
+                                    DateTime.TryParse(expiry)
+                                    |> Utils.ofBool
+                                    |> Option.map (fun expiry ->
+                                            AsianOption { ao with Expiry = expiry})
                             )
             )
 
@@ -62,7 +69,8 @@ let tradeChangeUpdate (model : Model) = function
         changeTrade model.trades id 
                 (Trades.tryMap ( function
                                 | Payment p -> Some <| Payment { p with Currency = ccy}
-                                | EuropeanOption eo -> Some <| EuropeanOption { eo with Currency = ccy}))
+                                | EuropeanOption eo -> Some <| EuropeanOption { eo with Currency = ccy}
+                                | AsianOption ao -> Some <| AsianOption { ao with Currency = ccy}))
 
     | NewSpotPrice (id,spot) ->
         changeTrade model.trades id 
@@ -72,6 +80,11 @@ let tradeChangeUpdate (model : Model) = function
                                     |> Utils.ofBool
                                     |> Option.map (fun spot ->
                                             EuropeanOption { eo with SpotPrice = spot})
+                                | AsianOption ao -> 
+                                    Double.TryParse(spot.Replace('.', ','))
+                                    |> Utils.ofBool
+                                    |> Option.map (fun spot ->
+                                            AsianOption { ao with SpotPrice = spot})
                                 | _ -> None))
 
     | NewStrike (id,strike) ->
@@ -82,6 +95,11 @@ let tradeChangeUpdate (model : Model) = function
                                     |> Utils.ofBool
                                     |> Option.map (fun strike ->
                                             EuropeanOption { eo with Strike = strike})
+                                | AsianOption ao -> 
+                                    Double.TryParse(strike.Replace('.', ','))
+                                    |> Utils.ofBool
+                                    |> Option.map (fun strike ->
+                                            AsianOption { ao with Strike = strike})
                                 | _ -> None))
 
     | NewDrift (id,drift) ->
@@ -92,6 +110,11 @@ let tradeChangeUpdate (model : Model) = function
                                     |> Utils.ofBool
                                     |> Option.map (fun drift ->
                                             EuropeanOption { eo with Drift = drift})
+                                | AsianOption ao -> 
+                                    Double.TryParse(drift.Replace('.', ','))
+                                    |> Utils.ofBool
+                                    |> Option.map (fun drift ->
+                                            AsianOption { ao with Drift = drift})        
                                 | _ -> None))
 
     | NewVolatility (id,volatility) ->
@@ -102,24 +125,46 @@ let tradeChangeUpdate (model : Model) = function
                                     |> Utils.ofBool
                                     |> Option.map (fun volatility ->
                                             EuropeanOption { eo with Volatility = volatility})
+                                | AsianOption ao -> 
+                                    Double.TryParse(volatility.Replace('.', ','))
+                                    |> Utils.ofBool
+                                    |> Option.map (fun volatility ->
+                                            AsianOption { ao with Volatility = volatility})
+                                | _ -> None))
+    
+    | NewStrikeType (id,strikeType) ->
+        changeTrade model.trades id 
+                (Trades.tryMap ( function
+                                | AsianOption ao -> 
+                                    AsianOption.parseStrikeType(strikeType)
+                                    |> Option.map (fun strikeT -> 
+                                            AsianOption { ao with StrikeType = strikeT})
                                 | _ -> None))
 
     | NewValuationMethod (id,valuationMethod) ->
         changeTrade model.trades id 
                 (Trades.tryMap ( function
                                 | EuropeanOption eo -> 
-                                    parseValuationMethod(valuationMethod)
+                                    EuropeanOption.parseValuationMethod(valuationMethod)
                                     |> Option.map (fun valMet -> 
                                             EuropeanOption { eo with ValuationMethod = valMet})
+                                | AsianOption ao -> 
+                                    AsianOption.parseValuationMethod(valuationMethod)
+                                    |> Option.map (fun valMet -> 
+                                            AsianOption { ao with ValuationMethod = valMet})
                                 | _ -> None))
 
     | NewOptionType (id,optionType) ->
         changeTrade model.trades id 
                 (Trades.tryMap ( function
                                 | EuropeanOption eo ->
-                                    parseOptionType(optionType)
+                                    EuropeanOption.parseOptionType(optionType)
                                     |> Option.map (fun optType -> 
                                             EuropeanOption { eo with OptionType = optType})
+                                | AsianOption ao ->
+                                    AsianOption.parseOptionType(optionType)
+                                    |> Option.map (fun optType -> 
+                                            AsianOption { ao with OptionType = optType})
                                 | _ -> None))
 
 let findEOTrade (trades : Map<TradeID,UITrade>) id =
@@ -246,6 +291,7 @@ let mapIDwithFunc (msg : TradeChangeMsg) func =
     | NewDrift (tradeID, _) -> tradeID |> func
     | NewVolatility (tradeID, _) -> tradeID |> func
     | NewValuationMethod (tradeID, _) -> tradeID |> func
+    | NewStrikeType (tradeID, _) -> tradeID |> func
     | NewOptionType (tradeID, _) -> tradeID |> func
 
 let update (http: HttpClient) message model =
@@ -259,6 +305,10 @@ let update (http: HttpClient) message model =
     | AddEuropeanOption ->
         let newEuropeanOption = Trades.wrap (EuropeanOption <| EuropeanOptionRecord.Random(model.configuration))
         let newTrades = Map.add newEuropeanOption.id newEuropeanOption model.trades
+        { model with trades = newTrades }, Cmd.none
+    | AddAsianOption ->
+        let newAsianOption = Trades.wrap (AsianOption <| AsianOptionRecord.Random(model.configuration))
+        let newTrades = Map.add newAsianOption.id newAsianOption model.trades
         { model with trades = newTrades }, Cmd.none
     | RemoveTrade(tradeId) ->
         let newTrades = Map.remove tradeId model.trades
@@ -358,6 +408,14 @@ let update (http: HttpClient) message model =
             { model with 
                 trades = trades
             }, Cmd.none
+    | RecalculateAllAO ->
+        let trades =
+             model.trades
+             |> Map.map (fun (ID : TradeID) (uiTrade : UITrade)  -> 
+                            match uiTrade.trade with
+                            | AsianOption _-> Trades.map (valuateTrade model.configuration model.marketData) uiTrade
+                            | _ -> uiTrade)
+        { model with trades = trades }, Cmd.none
     | RecalculateTrade tradeId ->
         match Map.tryFind tradeId model.trades with
         | Some trade ->

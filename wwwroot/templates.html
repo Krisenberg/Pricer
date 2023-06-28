@@ -84,6 +84,63 @@
     </div>
   </template>
 
+  <template id="AsianOptions">
+    <div class="content">
+      <h1 class="title">Asian Options</h1>
+      <button class="rz-button rz-secondary rz-ripple rz-border-radius-1" onclick="${RecalculateAll}">Recalculate All</button>
+      <button class="rz-button rz-secondary rz-ripple rz-border-radius-1" onclick="${AddAsianOption}">Add New</button>
+      <table class="rz-grid-table">
+        <tbody>
+          <tr>
+            <th></th>
+            <th style="width: 10%;">Name</th>
+            <th style="width: 5%;">Spot</th>
+            <th style="width: 5%;">Strike</th>
+            <th style="width: 5%;">Drift(%)</th>
+            <th style="width: 5%;">Vol.(%)</th>
+            <th style="width: 10%;">Expiry</th>
+            <th style="width: 6%;">Currency</th>
+            <th style="width: 10%;">Strike Type</th>
+            <th style="width: 8%;">Val. Method</th>
+            <th style="width: 10%;">Option Type</th>
+            <th style="width: 10%;">Value</th>
+          </tr>
+          <template id="AsianOptionsRows">
+            <tr>
+              <td><button class="rz-button rz-ripple rz-border-radius-1" onclick="${Delete}">X</button></td>
+              <td><input bind-onchange="${Name}" style="width: 150px;"/></td>
+              <td><input bind-onchange="${Spot}" style="width: 60px;"/></td>
+              <td><input bind-onchange="${Strike}" style="width: 60px;"/></td>
+              <td><input bind-onchange="${Drift}" style="width: 50px;"/></td>
+              <td><input bind-onchange="${Volatility}" style="width: 50px;"/></td>
+              <td><input bind-onchange="${Expiry}" style="width: 150px;"/></td>
+              <td><input bind-onchange="${Currency}" style="width: 40px;"/></td>
+              <td>
+                <select bind-onchange="${StrikeType}" style="width: 200px;">
+                    <option value="Fixed">Fixed Strike</option>
+                    <option value="Floating">Floating Strike</option>
+                </select>
+              </td>
+              <td>
+                <select bind-onchange="${ValuationMethod}" style="width: 150px;">
+                    <option value="Monte Carlo">Monte Carlo</option>
+                </select>
+              </td>
+              <td>
+                <select bind-onchange="${OptionType}" style="width: 80px;">
+                    <option value="Call">Call</option>
+                    <option value="Put">Put</option>
+                </select>
+              </td>
+              <td>${Value}</td>
+            </tr>
+          </template>
+          ${AsianOptionsRows}
+        </tbody>
+      </table>
+    </div>
+  </template>
+
   <template id="Summary">
     <div class="content">
     <h1 class="title">Summary</h1>
@@ -227,6 +284,7 @@
       ${SummaryPlaceholder}
       ${PaymentsPlaceholder}
       ${EuropeanOptionsPlaceholder}
+      ${AsianOptionsPlaceholder}
       ${MarketDataPlaceholder}
       ${EOChartConfigPlaceholder}
       <button class="rz-button rz-secondary rz-ripple rz-border-radius-1" onclick="${DrawChart}">Show/Hide Chart</button>

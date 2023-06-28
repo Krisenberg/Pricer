@@ -4,8 +4,26 @@
     "config":
     [
       {
-        "key":"runs",
+        "key":"EOruns",
         "value":"1000"
+      },
+      {
+        "key":"AOruns",
+        "value":"1000"
+      },
+      {
+        "key":"AOsteps",
+        "value":"100"
+      }
+    ]
+  },
+  {
+    "category":"asianOption",
+    "config":
+    [
+      {
+        "key":"factor",
+        "value":"0.95"
       }
     ]
   },

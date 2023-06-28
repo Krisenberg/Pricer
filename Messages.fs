@@ -13,6 +13,7 @@ type TradeChangeMsg =
     | NewStrike of TradeID * string
     | NewDrift of TradeID * string
     | NewVolatility of TradeID * string
+    | NewStrikeType of TradeID * string
     | NewValuationMethod of TradeID * string
     | NewOptionType of TradeID * string
 
@@ -27,11 +28,13 @@ type Message =
     | SetPage of Page
     | AddPayment
     | AddEuropeanOption
+    | AddAsianOption
     | RemoveTrade of TradeID
     | TradeChange of TradeChangeMsg
     | DrawChart
     | RecalculateAllPayments
     | RecalculateAllEO
+    | RecalculateAllAO
     | RecalculateTrade of TradeID
     | EOChartChange of EOChartChangeMsg
     | LoadData
