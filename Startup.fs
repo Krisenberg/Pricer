@@ -9,7 +9,7 @@ module Program =
 
     [<EntryPoint>]
     let Main args =
-        let helper = 25
+        let startupValue = 254
         let builder = WebAssemblyHostBuilder.CreateDefault(args)
         builder.RootComponents.Add<Main.MyApp>("#main")
         builder.Services.AddScoped<HttpClient>(fun _ ->

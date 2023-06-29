@@ -79,8 +79,6 @@ type EuropeanOptionValuationInputs =
 
 
 type EuropeanOptionValuationModel(inputs: EuropeanOptionValuationInputs) = 
-    // member this.valuationMethods = 
-    //     dict<ValuationMethod * OptionType, float*float*float*float -> float*float>[(Formulas, Call), this.calculateFormulas;(Formulas, Put), this.calculateFormulas; (MonteCarlo, Call), this.calculateMonteCarlo;(MonteCarlo, Put), this.calculateMonteCarlo]
     
     member this.valuationMethod =
         match inputs.Trade.ValuationMethod with
@@ -110,7 +108,7 @@ type EuropeanOptionValuationModel(inputs: EuropeanOptionValuationInputs) =
 
         let fxRateKey = sprintf "FX::%s%s" targetCcy tradeCcy
 
-        let fxRate = if inputs.MarketData.ContainsKey fxRateKey then float inputs.MarketData.[ fxRateKey ] else 1.0 // lookup FX rate
+        let fxRate = if inputs.MarketData.ContainsKey fxRateKey then float inputs.MarketData.[ fxRateKey ] else 1.0
         let finalCcy = if inputs.MarketData.ContainsKey fxRateKey then targetCcy else tradeCcy
 
         (fxRate, finalCcy)

@@ -42,7 +42,7 @@ let strikeTypeToString (strikeType : StrikeType) =
     | Fixed -> "Fixed Strike"
     | Floating -> "Floating Strike"
 
-// Model for Asian Option trades.
+
 type AsianOptionRecord =
     {
         TradeName       : string
@@ -57,11 +57,9 @@ type AsianOptionRecord =
         OptionType      : OptionType
         Value           : Money option
     }
-    
-    (* Creating random EO *)
+
     static member sysRandom = System.Random()
     static member Random(marketData : MarketData) = 
-        (* We pick a random currency either from given short list, or from valuation::knownCurrencies config key *)
         let knownCurrenciesDefault = [| "EUR"; "USD"; "PLN"; |]
         
         let knownCurrencies = if marketData.ContainsKey "valuation::knownCurrencies" 
@@ -82,7 +80,6 @@ type AsianOptionRecord =
             Value           = None
         }
 
-(* Complete set of data required for valuation *)
 type AsianOptionValuationInputs = 
     {
         Trade : AsianOptionRecord
@@ -124,15 +121,15 @@ type AsianOptionValuationModel(inputs: AsianOptionValuationInputs) =
 
     member this.convertPercentage(number : float) : float = number / 100.0
 
-    member this.generateSNV (runsNumber: int)(random: Random) =
-        let listOfNumbers = Array.create runsNumber 0.
+    member this.generateSNV (stepsNumber: int)(random: Random) =
+        let listOfNumbers = Array.create stepsNumber 0.
         let mutable i = 0
-        while (i<runsNumber) do
+        while (i<stepsNumber) do
             let U1 = random.NextDouble()
             let U2 = random.NextDouble()
             let Z1 = Math.Sqrt((-2.) * Math.Log(U1, Math.E)) * Math.Sin(2. * Math.PI * U2)
             listOfNumbers.[i]<-Z1
-            if i<(runsNumber-1) then
+            if i<(stepsNumber-1) then
                 let Z2 = Math.Sqrt((-2.) * Math.Log(U1, Math.E)) * Math.Cos(2. * Math.PI * U2)
                 i <- i+1
                 listOfNumbers.[i]<-Z2
@@ -157,12 +154,13 @@ type AsianOptionValuationModel(inputs: AsianOptionValuationInputs) =
             let mutable priceSum = 0.0
 
             for j in 1..steps do
-                let newPrice = actPrice * power * Math.Pow(Math.E, volDT * standardNormalVariables.[(j-1)])
+                let newPrice = actPrice * power * Math.Pow(Math.E, (volDT * standardNormalVariables.[(j-1)]))
                 priceSum <- priceSum + newPrice
                 actPrice <- newPrice
             
+            let avg_price = (priceSum / (float steps))
             last_prices_sum <- last_prices_sum + actPrice
-            avg_prices_sum <- avg_prices_sum + (priceSum / (float steps))
+            avg_prices_sum <- avg_prices_sum + avg_price
         
         let discountFactor = Math.Exp((-1.0) * drift * years)
         let avgPrice = (avg_prices_sum / (float count)) * discountFactor
@@ -192,14 +190,14 @@ type AsianOptionValuationModel(inputs: AsianOptionValuationInputs) =
         let steps = 
             match inputs.Data.TryFind "monteCarlo::AOsteps" with
             | Some number -> number
-            | None -> "1000"
+            | None -> "100"
         
         let stepsNumberOpt = steps |> Int32.TryParse |> Utils.ofBool
 
         let stepsNumber = 
             match stepsNumberOpt with
             | Some number -> number
-            | None -> 1000
+            | None -> 100
 
         stepsNumber
 

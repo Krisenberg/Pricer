@@ -139,7 +139,7 @@ let asianOptionRow dispatch (tradeId, ao : AsianOptionRecord) =
     let strike =
         match ao.StrikeType with
         | Fixed -> sprintf "%.2f" ao.Strike
-        | Floating -> sprintf "%s" "---" 
+        | Floating -> sprintf "%s" "---"
 
     let tradeChange msg s = dispatch <| TradeChange (msg (tradeId,s))
 

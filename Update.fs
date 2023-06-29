@@ -22,6 +22,30 @@ let changeTrade (trades : Map<TradeID,UITrade>) id f =
             | None -> trades, Cmd.ofMsg <| Warning (sprintf "Could not update trade %s (%A)" t.Name id)
         | None -> trades, Cmd.ofMsg <| Warning (sprintf "Could not find trade %A" id)
 
+let getTradeName (trade : UITrade) =
+    match trade.trade with
+    | Payment p -> p.TradeName
+    | EuropeanOption eo -> eo.TradeName
+    | AsianOption ao -> ao.TradeName
+
+let checkTradeNumbers (trade : UITrade) =
+    match trade.trade with
+    | Payment p -> p.Principal > 0
+    | EuropeanOption eo -> (eo.SpotPrice > 0.0 && eo.Strike > 0.0 && eo.Volatility > 0.0)
+    | AsianOption ao -> (ao.SpotPrice > 0.0 && ao.Strike > 0.0 && ao.Volatility > 0.0)
+
+let changeTradePosiviteNumber (trades : Map<TradeID,UITrade>) id f =
+        match Map.tryFind id trades with
+        | Some t -> 
+            match f t with
+            | Some t' -> 
+                if (not (checkTradeNumbers(t'))) then
+                    trades, Cmd.ofMsg <| Warning (sprintf "Principal, Spot, Strike and Volatility must be positive values")
+                else
+                    Map.add id t' trades, Cmd.none
+            | None -> trades, Cmd.ofMsg <| Warning (sprintf "Could not update trade %s (%A)" t.Name id)
+        | None -> trades, Cmd.ofMsg <| Warning (sprintf "Could not find trade %A" id)
+
 let tradeChangeUpdate (model : Model) = function
     | NewName (id,name) ->
         changeTrade model.trades id 
@@ -33,7 +57,7 @@ let tradeChangeUpdate (model : Model) = function
             )
 
     | NewPrincipal (id,principal) ->
-        changeTrade model.trades id 
+        changeTradePosiviteNumber model.trades id 
                 (Trades.tryMap ( function
                                 | Payment p -> 
                                     Int64.TryParse(principal)
@@ -73,7 +97,7 @@ let tradeChangeUpdate (model : Model) = function
                                 | AsianOption ao -> Some <| AsianOption { ao with Currency = ccy}))
 
     | NewSpotPrice (id,spot) ->
-        changeTrade model.trades id 
+        changeTradePosiviteNumber model.trades id 
                 (Trades.tryMap ( function
                                 | EuropeanOption eo -> 
                                     Double.TryParse(spot.Replace('.', ','))
@@ -88,7 +112,7 @@ let tradeChangeUpdate (model : Model) = function
                                 | _ -> None))
 
     | NewStrike (id,strike) ->
-        changeTrade model.trades id 
+        changeTradePosiviteNumber model.trades id 
                 (Trades.tryMap ( function
                                 | EuropeanOption eo -> 
                                     Double.TryParse(strike.Replace('.', ','))
@@ -118,7 +142,7 @@ let tradeChangeUpdate (model : Model) = function
                                 | _ -> None))
 
     | NewVolatility (id,volatility) ->
-        changeTrade model.trades id 
+        changeTradePosiviteNumber model.trades id 
                 (Trades.tryMap ( function
                                 | EuropeanOption eo -> 
                                     Double.TryParse(volatility.Replace('.', ','))
@@ -183,19 +207,6 @@ let changeChart (model : Model, newTrades : Map<TradeID,UITrade>) (id : TradeID)
         | None -> model.chart
     else
         model.chart
-
-
-// let tradeOnChartChangeUpdate (model : Model, newTrades) = function
-//     | NewName (id,_) -> id |> changeChart(model, newTrades)
-//     | NewPrincipal (id,_) -> id |> changeChart(model, newTrades)
-//     | NewExpiry (id,_) -> id |> changeChart(model, newTrades)
-//     | NewCurrency (id,_) -> id |> changeChart(model, newTrades)
-//     | NewSpotPrice (id,_) -> id |> changeChart(model, newTrades)
-//     | NewStrike (id,_) -> id |> changeChart(model, newTrades)
-//     | NewDrift (id,_) -> id |> changeChart(model, newTrades)
-//     | NewVolatility (id,_) -> id |> changeChart(model, newTrades)
-//     | NewValuationMethod (id,_) -> id |> changeChart(model, newTrades)
-//     | NewOptionType (id,_) -> id |> changeChart(model, newTrades)
 
 
 let chartChangeUpdate (model : Model) = function
@@ -266,19 +277,6 @@ let chartChangeUpdate (model : Model) = function
                                                 |> Utils.optionMapTriple (fun (eoRecord, xLow, xHigh) ->
                                                 makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, [|eoRecord|],model.chart.Trades, (xLow, xHigh), model.configuration, model.marketData))
 
-
-// let getIDfromMSG (msg : TradeChangeMsg) =
-//     match msg with
-//     | NewName (tradeID, _) -> tradeID
-//     | NewPrincipal (tradeID, _) -> tradeID
-//     | NewCurrency (tradeID, _) -> tradeID
-//     | NewExpiry (tradeID, _) -> tradeID
-//     | NewSpotPrice (tradeID, _) -> tradeID
-//     | NewStrike (tradeID, _) -> tradeID
-//     | NewDrift (tradeID, _) -> tradeID
-//     | NewVolatility (tradeID, _) -> tradeID
-//     | NewValuationMethod (tradeID, _) -> tradeID
-//     | NewOptionType (tradeID, _) -> tradeID
 
 let mapIDwithFunc (msg : TradeChangeMsg) func =
     match msg with
