@@ -61,7 +61,7 @@ type ChartData =
         ItemX = SpotPrice
         ItemY = Value
         Trades = [||]
-        ScopeX = (0., 300.)
+        ScopeX = (0.01, 300.)
         Data = Map.empty
         MarketData = Map.empty
       }

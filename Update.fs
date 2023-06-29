@@ -224,10 +224,10 @@ let chartChangeUpdate (model : Model) = function
                                                     | Some Drift | Some Volatility | Some Time ->
                                                         match model.chart.ItemX with
                                                         | Drift | Volatility | Time -> (item, model.chart.ItemY, [||], [||],model.chart.ScopeX, model.configuration, model.marketData)
-                                                        | _ -> (item, model.chart.ItemY, [||], [||],(0.00,40.00), model.configuration, model.marketData)
+                                                        | _ -> (item, model.chart.ItemY, [||], [||],(0.01,40.00), model.configuration, model.marketData)
                                                     | _ ->
                                                         match model.chart.ItemX with
-                                                        | Drift | Volatility | Time-> (item, model.chart.ItemY, [||], [||],(0.00,300.00), model.configuration, model.marketData)
+                                                        | Drift | Volatility | Time-> (item, model.chart.ItemY, [||], [||],(0.01,300.00), model.configuration, model.marketData)
                                                         | _ -> (item, model.chart.ItemY, [||], [||],model.chart.ScopeX, model.configuration, model.marketData)
                                                 itemXaxis
                                                 |> Option.map (fun item ->
@@ -239,10 +239,10 @@ let chartChangeUpdate (model : Model) = function
                                                     | Some Drift | Some Volatility | Some Time ->
                                                         match model.chart.ItemX with
                                                         | Drift | Volatility | Time -> (item, model.chart.ItemY, [|record|], model.chart.Trades,model.chart.ScopeX, model.configuration, model.marketData)
-                                                        | _ -> (item, model.chart.ItemY, [|record|], model.chart.Trades,(0.00,40.0), model.configuration, model.marketData)
+                                                        | _ -> (item, model.chart.ItemY, [|record|], model.chart.Trades,(0.01,40.0), model.configuration, model.marketData)
                                                     | _ ->
                                                         match model.chart.ItemX with
-                                                        | Drift | Volatility | Time -> (item, model.chart.ItemY, [|record|], model.chart.Trades,(0.00,300.0), model.configuration, model.marketData)
+                                                        | Drift | Volatility | Time -> (item, model.chart.ItemY, [|record|], model.chart.Trades,(0.01,300.0), model.configuration, model.marketData)
                                                         | _ -> (item, model.chart.ItemY, [|record|], model.chart.Trades,model.chart.ScopeX, model.configuration, model.marketData)
                                                 let eoRecordOpt = findEOTrade model.trades model.chart.Trades[0]
                                                 (eoRecordOpt, itemXaxis)
