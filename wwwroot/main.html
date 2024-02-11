@@ -5,7 +5,10 @@
         <ul class="rz-secondary menu-list">
           ${Menu}
           <template id="MenuItem">
-            <li><a class="rz-ripple rz-border-radius-1 ${Active}" href="${Url}">${Text}</a></li>
+            <li><a class="rz-border-radius-1 ${Active}" href="${Url}">
+              <i class="fa-solid ${Icon} mr-2"></i>
+              ${Text}
+            </a></li>
           </template>
         </ul>
       </nav>

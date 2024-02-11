@@ -1,10 +1,29 @@
 html, body {
   height: 100%;
+  font-family: 'Lato', sans-serif;
+  font-size: 18px;
 }
 
 body {
   display: flex;
   flex-direction: column;
+}
+
+.navbar-item:hover {
+  background-color: #a8cbb5 !important;
+}
+
+.active-menu-item {
+  background-color: #5e9372 !important;
+  color: white !important;
+}
+
+.active-menu-item:hover {
+  background-color: #5e93729b !important;
+}
+
+.not-active-menu-item:hover {
+  background-color: rgba(132, 132, 132, 0.449) !important;
 }
 
 #main {
@@ -43,4 +62,53 @@ body {
   width: 8%;
   transform: rotate(-45deg);
   writing-mode: vertical-lr;
+}
+
+.currency-input input::-webkit-calendar-picker-indicator {
+  opacity:0;
+}
+
+.currency-input input {
+  position:relative;  
+}
+
+.currency-input input:before {
+  content: "\f078";
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position:absolute;
+  right:0;
+  top:50%;
+  transform:translateY(-50%);
+}
+
+.custom-button {
+  background-color: #5e9372;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 18px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.custom-button:hover {
+  background-color: #5e937299;
+}
+
+.delete-button {
+  color: rgb(152, 16, 16);
+}
+
+.delete-button:hover {
+  color: rgba(152, 16, 16, 0.601);
+}
+
+.input {
+  font-size: 16px !important;
 }

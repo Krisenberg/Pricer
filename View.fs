@@ -104,7 +104,8 @@ let paymentRow dispatch (tradeId, p : PaymentRecord) =
     let tradeChange msg s = dispatch <| TradeChange (msg (tradeId,s))
     Templates.PaymentsRow()
         .Name(p.TradeName,tradeChange NewName)
-        .Expiry(sprintf "%A" p.Expiry, tradeChange NewExpiry)
+        // .Expiry(sprintf "%A" p.Expiry, tradeChange NewExpiry)
+        .Expiry(sprintf "%s" (p.Expiry.ToString("yyyy-MM-dd")), tradeChange NewExpiry)
         .Currency(p.Currency, tradeChange NewCurrency)
         .Principal(sprintf "%i" p.Principal, tradeChange NewPrincipal)
         .Value(value)
@@ -263,7 +264,7 @@ let homePage (model: Model) dispatch =
      .PaymentsPlaceholder(paymentsView)
      .EuropeanOptionsPlaceholder(europeanOptionsView)
      .AsianOptionsPlaceholder(asianOptionsView)
-     .MarketDataPlaceholder(marketDataDisplay model.marketData dispatch)
+    //  .MarketDataPlaceholder(marketDataDisplay model.marketData dispatch)
      .EOChartConfigPlaceholder(configureChart dispatch (model, europeanOptions))
      .DrawChart(fun _ -> dispatch DrawChart)
      .ChartsPlaceholder(
@@ -273,23 +274,26 @@ let homePage (model: Model) dispatch =
             Html.empty())
      .Elt()
 
-let menuItem (model: Model) (router :Router<_,_,_>) (page: Page) (text: string) =
-    let activeFlag = "rz-button rz-secondary"
+let menuItem (model: Model) (router :Router<_,_,_>) (page: Page) (icon: string) (text: string) =
+    let activeFlag = "active-menu-item"
     Main.MenuItem()
-        .Active(if model.page = page then activeFlag else "")
+        .Active(if model.page = page then activeFlag else "not-active-menu-item")
         .Url(router.Link page)
+        .Icon(icon)
         .Text(text)
         .Elt()
 
 let view router model dispatch =
     Main()
         .Menu(concat {
-            menuItem model router Home "Home"
-            menuItem model router Config "Config"
+            menuItem model router Home "fa-house" "Home"
+            menuItem model router MarketData "fa-magnifying-glass-chart" "Market data"
+            menuItem model router Config "fa-gear" "Config"
         })
         .Body(
             cond model.page <| function
             | Home -> homePage model dispatch
+            | MarketData -> marketDataDisplay model.marketData dispatch
             | Config -> configDisplay model.configuration dispatch
         )
         .Error(

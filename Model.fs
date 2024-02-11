@@ -21,6 +21,7 @@ type UITrade =
 /// Routing endpoints definition.
 type Page =
     | [<EndPoint "/">] Home
+    | [<EndPoint "/marketData">] MarketData
     | [<EndPoint "/config">] Config
 
 /// The Elmish application's model.

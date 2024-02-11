@@ -3,8 +3,14 @@
   <template id="Payments">
     <div class="content">
       <h1 class="title">Payments</h1>
-      <button class="rz-button rz-secondary rz-ripple rz-border-radius-1" onclick="${RecalculateAll}">Recalculate All</button>
-      <button class="rz-button rz-secondary rz-ripple rz-border-radius-1" onclick="${AddPayment}">Add New</button>
+      <button class="custom-button" onclick="${RecalculateAll}">
+        <i class="fa-solid fa-rotate-right"></i>
+        Recalculate All
+      </button>
+      <button class="custom-button" onclick="${AddPayment}">
+        <i class="fa-solid fa-circle-plus"></i>
+        Add New
+      </button>
       <table class="rz-grid-table">
         <tbody>
           <tr>
@@ -17,10 +23,37 @@
           </tr>
           <template id="PaymentsRow">
             <tr>
-              <td><button class="rz-button rz-ripple rz-border-radius-1" onclick="${Delete}">X</button></td>
+              <td>
+                <i class="delete-button fa-solid fa-circle-xmark fa-lg" onclick="${Delete}"></i>
+              </td>
               <td><input bind-onchange="${Name}" /></td>
-              <td><input bind-onchange="${Expiry}" /></td>
-              <td><input bind-onchange="${Currency}" /></td>
+              <td>
+                <div class="field">
+                  <input class="input is-small" type="date" placeholder="Expiry date" bind-onchange="${Expiry}" onchange="checkFutureDate(this)">
+                </div>
+              </td>
+              <!-- <td><input bind-onchange="${Expiry}" /></td> -->
+              <td>
+                <!-- <input bind-onchange="${Currency}" /> -->
+                <div class="field">
+                  <input type="text" list="cars" bind-onchange="${Currency}"/>
+                  <datalist id="cars">
+                    <option>Volvo</option>
+                    <option>Saab</option>
+                    <option>Mercedes</option>
+                    <option>Audi</option>
+                  </datalist>
+                </div>
+                <!-- <div class="currency-input">
+                  <input type="text" list="cars" bind-onchange="${Currency}"/>
+                  <datalist id="cars">
+                    <option>Volvo</option>
+                    <option>Saab</option>
+                    <option>Mercedes</option>
+                    <option>Audi</option>
+                  </datalist>
+                </div> -->
+              </td>
               <td><input bind-onchange="${Principal}" /></td>
               <td>${Value}</td>
             </tr>
@@ -236,7 +269,7 @@
   <template id="Home">
     <div class="content">
       ${SummaryPlaceholder}
-      ${MarketDataPlaceholder}
+      <!-- ${MarketDataPlaceholder} -->
       ${PaymentsPlaceholder}
       ${EuropeanOptionsPlaceholder}
       ${AsianOptionsPlaceholder}

@@ -3,22 +3,51 @@
   <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bolero Application</title>
+    <title>Pricer</title>
     <base href="/"/>
-    <link rel="stylesheet" href="css/index.css"/>
     <link rel="stylesheet" href="_content/Radzen.Blazor/css/humanistic-base.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@100;400;700&display=swap">
+    <link rel="stylesheet" href="css/index.css?v=1"/>
+    <!-- <style> ::-webkit-scrollbar{height:10px;width:14px}::-webkit-scrollbar-track{background:#efefef;border-radius:6px}::-webkit-scrollbar-thumb{background:#b4b4b4;border-radius:6px}::-webkit-scrollbar-thumb:hover{background:#7e7e7e}</style> -->
   </head>
   <body>
-    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
-      <div class="navbar-brand">
-        <a class="navbar-item has-text-weight-bold is-size-5">
+    <!-- <nav class="navbar is-dark" role="navigation" aria-label="main navigation"> -->
+    <nav class="navbar" style="background-color: #3f7052;" role="navigation" aria-label="main navigation">
+      <div class="navbar-brand ml-5">
+        <a class="navbar-item has-text-weight-normal is-size-4 is-family-code has-text-white">
+          <i class="fa-solid fa-chart-line mr-5" style="color: #ffffff;"></i>
           Pricer
+        </a>
+      </div>
+      <div class="navbar-end mr-5">
+        <a class="navbar-item has-text-weight-normal is-size-4 is-family-code has-text-white" href="https://github.com/Krisenberg/Pricer" target="_blank">
+          <i class="fa-brands fa-github mr-2" style="color: #ffffff;"></i>
+          Source
         </a>
       </div>
     </nav>
     <div id="main">Loading...</div>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+    <script>
+      function checkFutureDate(input) {
+        // Get today's date
+        var today = new Date();
+        today.setHours(0, 0, 0, 0); // Set time to midnight for accurate comparison
+    
+        // Get the selected date from the input
+        var selectedDate = new Date(input.value);
+    
+        // Compare selected date with today's date
+        if (selectedDate <= today) {
+          // If selected date is not in the future, reset the input value to an empty string
+          input.value = '';
+          // Optionally, you can display an error message or perform other actions here
+          alert('Please select a date from the future.');
+        }
+      }
+    </script>
   </body>
 </html>
