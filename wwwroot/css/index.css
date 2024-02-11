@@ -64,27 +64,9 @@ body {
   writing-mode: vertical-lr;
 }
 
-.currency-input input::-webkit-calendar-picker-indicator {
+/* input::-webkit-calendar-picker-indicator {
   opacity:0;
-}
-
-.currency-input input {
-  position:relative;  
-}
-
-.currency-input input:before {
-  content: "\f078";
-  display: inline-block;
-  font: normal normal normal 14px/1 FontAwesome;
-  font-size: inherit;
-  text-rendering: auto;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  position:absolute;
-  right:0;
-  top:50%;
-  transform:translateY(-50%);
-}
+} */
 
 .custom-button {
   background-color: #5e9372;
@@ -102,7 +84,7 @@ body {
 }
 
 .delete-button {
-  color: rgb(152, 16, 16);
+  color: rgb(175, 39, 39);
 }
 
 .delete-button:hover {

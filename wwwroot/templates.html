@@ -29,23 +29,14 @@
               <td><input bind-onchange="${Name}" /></td>
               <td>
                 <div class="field">
-                  <input class="input is-small" type="date" placeholder="Expiry date" bind-onchange="${Expiry}" onchange="checkFutureDate(this)">
+                  <input class="input" type="date" placeholder="Expiry date" bind-onchange="${Expiry}" onchange="checkFutureDate(this)">
                 </div>
               </td>
               <!-- <td><input bind-onchange="${Expiry}" /></td> -->
               <td>
                 <!-- <input bind-onchange="${Currency}" /> -->
-                <div class="field">
-                  <input type="text" list="cars" bind-onchange="${Currency}"/>
-                  <datalist id="cars">
-                    <option>Volvo</option>
-                    <option>Saab</option>
-                    <option>Mercedes</option>
-                    <option>Audi</option>
-                  </datalist>
-                </div>
-                <!-- <div class="currency-input">
-                  <input type="text" list="cars" bind-onchange="${Currency}"/>
+                <!-- <div class="field">
+                  <input class="input is-small" type="text" placeholder="USD" list="cars" bind-onchange="${Currency}"/>
                   <datalist id="cars">
                     <option>Volvo</option>
                     <option>Saab</option>
@@ -53,6 +44,14 @@
                     <option>Audi</option>
                   </datalist>
                 </div> -->
+                <div class="field">
+                  <input class="input" type="text" placeholder="USD" list="currencies" bind-onchange="${Currency}"/>
+                  <datalist id="currencies">
+                    <option>USD</option>
+                    <option>EUR</option>
+                    <option>PLN</option>
+                  </datalist>
+                </div>
               </td>
               <td><input bind-onchange="${Principal}" /></td>
               <td>${Value}</td>
