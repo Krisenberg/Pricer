@@ -1,7 +1,7 @@
 <div class="templates">
 
   <template id="Payments">
-    <div class="content">
+    <div class="content" style="margin-top: 30px;">
       <h1 class="title">Payments</h1>
       <button class="custom-button" onclick="${RecalculateAll}">
         <i class="fa-solid fa-rotate-right"></i>
@@ -11,39 +11,32 @@
         <i class="fa-solid fa-circle-plus"></i>
         Add New
       </button>
-      <table class="rz-grid-table">
+      <table class="rz-grid-table" style="margin-top: 15px; width: 60%; min-width: 800px;">
         <tbody>
           <tr>
-            <th></th>
-            <th style="width: 19%;">Name</th>
-            <th style="width: 19%;">Expiry</th>
-            <th style="width: 19%;">Currency</th>
-            <th style="width: 19%;">Principal</th>
-            <th style="width: 19%;">Value</th>
+            <th style="width: 5%;"></th>
+            <th style="width: 25%;">Name</th>
+            <th style="width: 20%;">Expiry</th>
+            <th style="width: 10%;">Currency</th>
+            <th style="width: 20%;">Principal</th>
+            <th style="width: 20%;">Value</th>
           </tr>
           <template id="PaymentsRow">
             <tr>
               <td>
                 <i class="delete-button fa-solid fa-circle-xmark fa-lg" onclick="${Delete}"></i>
               </td>
-              <td><input bind-onchange="${Name}" /></td>
+              <td>
+                <div class="field">
+                  <input class="input" type="text" placeholder="EuropeanOption123" bind-onchange="${Name}"/>
+                </div>
+              </td>
               <td>
                 <div class="field">
                   <input class="input" type="date" placeholder="Expiry date" bind-onchange="${Expiry}" onchange="checkFutureDate(this)">
                 </div>
               </td>
-              <!-- <td><input bind-onchange="${Expiry}" /></td> -->
               <td>
-                <!-- <input bind-onchange="${Currency}" /> -->
-                <!-- <div class="field">
-                  <input class="input is-small" type="text" placeholder="USD" list="cars" bind-onchange="${Currency}"/>
-                  <datalist id="cars">
-                    <option>Volvo</option>
-                    <option>Saab</option>
-                    <option>Mercedes</option>
-                    <option>Audi</option>
-                  </datalist>
-                </div> -->
                 <div class="field">
                   <input class="input" type="text" placeholder="USD" list="currencies" bind-onchange="${Currency}"/>
                   <datalist id="currencies">
@@ -53,13 +46,63 @@
                   </datalist>
                 </div>
               </td>
-              <td><input bind-onchange="${Principal}" /></td>
+              <td>
+                <div class="field">
+                  <input class="input" type="text" placeholder="100" bind-onchange="${Principal}"/>
+                </div>
+              </td>
               <td>${Value}</td>
             </tr>
           </template>
           ${PaymentRows}
         </tbody>
       </table>
+      <!-- <table class="table is-striped is-fullwidth">
+        <tbody>
+          <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Expiry</th>
+            <th>Currency</th>
+            <th>Principal</th>
+            <th>Value</th>
+          </tr>
+          <template id="PaymentsRow">
+            <tr>
+              <td>
+                <i class="delete-button fa-solid fa-circle-xmark fa-lg" onclick="${Delete}"></i>
+              </td>
+              <td>
+                <div class="field">
+                  <input class="input" type="text" placeholder="EuropeanOption123" bind-onchange="${Name}"/>
+                </div>
+              </td>
+              <td>
+                <div class="field">
+                  <input class="input" type="date" placeholder="Expiry date" bind-onchange="${Expiry}" onchange="checkFutureDate(this)">
+                </div>
+              </td>
+              <td>
+                <div class="field">
+                  <input class="input" type="text" placeholder="USD" list="currencies" bind-onchange="${Currency}"/>
+                  <datalist id="currencies">
+                    <option>USD</option>
+                    <option>EUR</option>
+                    <option>PLN</option>
+                  </datalist>
+                </div>
+              </td>
+              <td>
+                <div class="field">
+                  <input class="input" type="text" placeholder="100" bind-onchange="${Principal}"/>
+                </div>
+              </td>
+              <td>${Value}</td>
+            </tr>
+          </template>
+          ${PaymentRows}
+        </tbody>
+      </table> -->
     </div>
   </template>
   
@@ -176,7 +219,7 @@
   <template id="Summary">
     <div class="content">
     <h1 class="title">Summary</h1>
-    <table class="rz-grid-table">
+    <table class="rz-grid-table" style="margin-top: 15px; width: 60%; min-width: 800px;">
       <tbody>
         <tr>
           <th style="width: 30%;">Currency</th>
@@ -184,6 +227,27 @@
         </tr>
         ${Rows}
         <template id="SummaryRow">
+          <tr>
+            <td>${CCY}</td>
+            <td>${Value}</td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+    </div>
+  </template>
+
+  <template id="SummaryPayments">
+    <div class="content">
+    <h1 class="title">Summary [Payments]</h1>
+    <table class="rz-grid-table" style="margin-top: 15px; width: 60%; min-width: 800px;">
+      <tbody>
+        <tr>
+          <th style="width: 30%;">Currency</th>
+          <th>Value</th>
+        </tr>
+        ${Rows}
+        <template id="SummaryPaymentsRow">
           <tr>
             <td>${CCY}</td>
             <td>${Value}</td>

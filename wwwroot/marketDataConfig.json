@@ -20,5 +20,15 @@
         "value":"0.79"
       }
     ]
+  },
+  {
+    "category":"MD",
+    "config":
+    [
+      {
+        "key":"DRIFT",
+        "value":"6.69"
+      }
+    ]
   }
 ]

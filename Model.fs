@@ -21,6 +21,7 @@ type UITrade =
 /// Routing endpoints definition.
 type Page =
     | [<EndPoint "/">] Home
+    | [<EndPoint "/summary">] Summary
     | [<EndPoint "/marketData">] MarketData
     | [<EndPoint "/config">] Config
 

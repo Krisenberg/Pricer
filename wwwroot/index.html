@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css"/>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@100;400;700&display=swap">
     <link rel="stylesheet" href="css/index.css?v=1"/>
-    <!-- <style> ::-webkit-scrollbar{height:10px;width:14px}::-webkit-scrollbar-track{background:#efefef;border-radius:6px}::-webkit-scrollbar-thumb{background:#b4b4b4;border-radius:6px}::-webkit-scrollbar-thumb:hover{background:#7e7e7e}</style> -->
+    <style> ::-webkit-scrollbar{height:10px;width:14px}::-webkit-scrollbar-track{background:#efefef;border-radius:6px}::-webkit-scrollbar-thumb{background:#b4b4b4;border-radius:6px}::-webkit-scrollbar-thumb:hover{background:#7e7e7e}</style>
   </head>
   <body>
     <!-- <nav class="navbar is-dark" role="navigation" aria-label="main navigation"> -->
@@ -42,9 +42,7 @@
     
         // Compare selected date with today's date
         if (selectedDate <= today) {
-          // If selected date is not in the future, reset the input value to an empty string
           input.value = '';
-          // Optionally, you can display an error message or perform other actions here
           alert('Please select a date from the future.');
         }
       }
