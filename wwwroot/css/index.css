@@ -64,10 +64,6 @@ body {
   writing-mode: vertical-lr;
 }
 
-/* input::-webkit-calendar-picker-indicator {
-  opacity:0;
-} */
-
 .custom-button {
   background-color: #5e9372;
   color: white;

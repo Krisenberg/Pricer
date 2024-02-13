@@ -32,7 +32,7 @@ let checkTradeNumbers (trade : UITrade) =
     match trade.trade with
     | Payment p -> p.Principal > 0
     | EuropeanOption eo -> eo.Strike > 0.0
-    | AsianOption ao -> (ao.SpotPrice > 0.0 && ao.Strike > 0.0 && ao.Volatility > 0.0)
+    | AsianOption ao -> ao.Strike > 0.0
 
 let changeTradePosiviteNumber (trades : Map<TradeID,UITrade>) id f =
         match Map.tryFind id trades with
@@ -60,6 +60,7 @@ let tradeChangeUpdate (model : Model) = function
         changeTrade model.trades id 
                 (Trades.tryMap ( function
                                 | EuropeanOption eo -> Some <| EuropeanOption { eo with Asset = asset}
+                                | AsianOption ao -> Some <| AsianOption { ao with Asset = asset}
                                 | _ -> None
                             )
             )
@@ -104,21 +105,6 @@ let tradeChangeUpdate (model : Model) = function
                                 | EuropeanOption eo -> Some <| EuropeanOption { eo with Currency = ccy}
                                 | AsianOption ao -> Some <| AsianOption { ao with Currency = ccy}))
 
-    | NewSpotPrice (id,spot) ->
-        changeTradePosiviteNumber model.trades id 
-                (Trades.tryMap ( function
-                                // | EuropeanOption eo -> 
-                                //     Double.TryParse(spot.Replace('.', ','))
-                                //     |> Utils.ofBool
-                                //     |> Option.map (fun spot ->
-                                //             EuropeanOption { eo with SpotPrice = spot})
-                                | AsianOption ao -> 
-                                    Double.TryParse(spot.Replace('.', ','))
-                                    |> Utils.ofBool
-                                    |> Option.map (fun spot ->
-                                            AsianOption { ao with SpotPrice = spot})
-                                | _ -> None))
-
     | NewStrike (id,strike) ->
         changeTradePosiviteNumber model.trades id 
                 (Trades.tryMap ( function
@@ -132,36 +118,6 @@ let tradeChangeUpdate (model : Model) = function
                                     |> Utils.ofBool
                                     |> Option.map (fun strike ->
                                             AsianOption { ao with Strike = strike})
-                                | _ -> None))
-
-    | NewDrift (id,drift) ->
-        changeTrade model.trades id 
-                (Trades.tryMap ( function
-                                // | EuropeanOption eo -> 
-                                //     Double.TryParse(drift.Replace('.', ','))
-                                //     |> Utils.ofBool
-                                //     |> Option.map (fun drift ->
-                                //             EuropeanOption { eo with Drift = drift})
-                                | AsianOption ao -> 
-                                    Double.TryParse(drift.Replace('.', ','))
-                                    |> Utils.ofBool
-                                    |> Option.map (fun drift ->
-                                            AsianOption { ao with Drift = drift})        
-                                | _ -> None))
-
-    | NewVolatility (id,volatility) ->
-        changeTradePosiviteNumber model.trades id 
-                (Trades.tryMap ( function
-                                // | EuropeanOption eo -> 
-                                //     Double.TryParse(volatility.Replace('.', ','))
-                                //     |> Utils.ofBool
-                                //     |> Option.map (fun volatility ->
-                                //             EuropeanOption { eo with Volatility = volatility})
-                                | AsianOption ao -> 
-                                    Double.TryParse(volatility.Replace('.', ','))
-                                    |> Utils.ofBool
-                                    |> Option.map (fun volatility ->
-                                            AsianOption { ao with Volatility = volatility})
                                 | _ -> None))
     
     | NewStrikeType (id,strikeType) ->
@@ -293,10 +249,7 @@ let mapIDwithFunc (msg : TradeChangeMsg) func =
     | NewPrincipal (tradeID, _) -> tradeID |> func
     | NewCurrency (tradeID, _) -> tradeID |> func
     | NewExpiry (tradeID, _) -> tradeID |> func
-    | NewSpotPrice (tradeID, _) -> tradeID |> func
     | NewStrike (tradeID, _) -> tradeID |> func
-    | NewDrift (tradeID, _) -> tradeID |> func
-    | NewVolatility (tradeID, _) -> tradeID |> func
     | NewValuationMethod (tradeID, _) -> tradeID |> func
     | NewStrikeType (tradeID, _) -> tradeID |> func
     | NewOptionType (tradeID, _) -> tradeID |> func
@@ -388,19 +341,7 @@ let update (http: HttpClient) message model =
                             sprintf "%s::%s" cat.Category k, v))
                 |> Map.ofArray
         { model with configuration = c }, Cmd.none
-    // | RecalculateAll ->
-    //     let trades =
-    //          model.trades
-    //          |> Map.map (fun _ -> Trades.map <| valuateTrade model.configuration model.marketData)
-    //     if (not (Array.isEmpty model.chart.Trades)) then
-    //         { model with 
-    //             trades = trades
-    //             chart = model.chart.Trades.[0] |> changeChart(model, trades)
-    //         }, Cmd.none
-    //     else
-    //         { model with 
-    //             trades = trades
-    //         }, Cmd.none
+
     | RecalculateAllPayments ->
         let trades =
              model.trades

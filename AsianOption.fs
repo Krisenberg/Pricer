@@ -39,17 +39,15 @@ let valuationMethodToString (valuationMethod : ValuationMethod) =
 
 let strikeTypeToString (strikeType : StrikeType) =
     match strikeType with
-    | Fixed -> "Fixed Strike"
-    | Floating -> "Floating Strike"
+    | Fixed -> "Fixed"
+    | Floating -> "Floating"
 
 
 type AsianOptionRecord =
     {
         TradeName       : string
-        SpotPrice       : float
+        Asset           : string
         Strike          : float
-        Drift           : float
-        Volatility      : float
         Expiry          : DateTime
         Currency        : string
         StrikeType      : StrikeType
@@ -68,10 +66,8 @@ type AsianOptionRecord =
         
         {
             TradeName       = sprintf "AsianOption%04d" (AsianOptionRecord.sysRandom.Next(9999))
-            SpotPrice       = AsianOptionRecord.sysRandom.Next(10,500)
+            Asset           = "AAPL"
             Strike          = AsianOptionRecord.sysRandom.Next(10,500)
-            Drift           = AsianOptionRecord.sysRandom.Next(0,30)
-            Volatility      = AsianOptionRecord.sysRandom.Next(0,30)
             Expiry          = (DateTime.Now.AddMonths (AsianOptionRecord.sysRandom.Next(1, 6))).Date
             Currency        = knownCurrencies.[ AsianOptionRecord.sysRandom.Next(knownCurrencies.Length) ]
             StrikeType      = Fixed
@@ -85,15 +81,19 @@ type AsianOptionValuationInputs =
         Trade : AsianOptionRecord
         Data : Configuration
         MarketData: MarketData
+        AssetsData: AssetsData
     }
 
 
 type AsianOptionValuationModel(inputs: AsianOptionValuationInputs) = 
-    
+    let (assetSpot, assetVol) = assetValues inputs.Trade.Asset inputs.AssetsData
     member this.valuationMethod =
         match inputs.Trade.ValuationMethod with
         | MonteCarlo -> this.calculateMonteCarlo
 
+    member this.drift = this.convertPercentage(marketDrift inputs.MarketData)
+    member this.volatility = this.convertPercentage(assetVol)
+    member this.time = this.calculateMaturity(inputs.Trade.Expiry)
     member this.currencies = this.prepareCurrencies()
     member this.fxRate = this.currencies |> fst
     member this.finalCcy = this.currencies |> snd
@@ -239,11 +239,7 @@ type AsianOptionValuationModel(inputs: AsianOptionValuationInputs) =
         payoff
 
 
-    member this.Calculate(spot, strike, drift, volatility, time) : Money =
-        let scaled_drift = this.convertPercentage(drift)
-        let scaled_volatility = this.convertPercentage(volatility)
-        let calculated_time = this.calculateMaturity(time)
-
-        let value= this.valuationMethod(spot, strike, scaled_drift, scaled_volatility, calculated_time)
+    member this.Calculate(strike): Money =
+        let value= this.valuationMethod(assetSpot, strike, this.drift, this.volatility, this.time)
 
         { Value = (value / this.fxRate); Currency = this.finalCcy }

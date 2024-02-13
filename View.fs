@@ -159,6 +159,27 @@ let summaryEuropeanOptions (model: Model) (name:string) dispatch =
         .Rows(forEach groupedByCCy summaryRow)
         .Elt()
 
+let summaryAsianOptions (model: Model) (name:string) dispatch =
+    let groupedByCCy =
+        model.trades
+        |> Map.values
+        |> Seq.choose (fun x ->
+            match x.trade with
+            | AsianOption ao -> ao.Value
+            | _ -> None
+            )
+        |> Seq.groupBy (fun m -> m.Currency)
+    let summaryRow (ccy,values : Money seq) =
+        let sum = values |> Seq.sumBy (fun v -> v.Value)
+        Templates.SummaryRow()
+            .CCY(text ccy)
+            .Value(text <| sprintf "%.2f" sum)
+            .Elt()
+    Templates.Summary()
+        .Title(name)
+        .Rows(forEach groupedByCCy summaryRow)
+        .Elt()
+
 
 let paymentRow dispatch (tradeId, p : PaymentRecord) =
     let value = p.Value |> Option.map (string) |> Option.defaultValue "" 
@@ -196,7 +217,7 @@ let europeanOptionRow dispatch (model: Model) (tradeId, eo : EuropeanOptionRecor
 
     Templates.EuropeanOptionsRows()
         .Name(eo.TradeName,tradeChange NewName)
-        // .Asset(eo.Asset,tradeChange NewAsset)
+        .Asset(eo.Asset,tradeChange NewAsset)
         .AssetNames(forEach assetNames showAssetName)
         .Strike(sprintf "%.2f" eo.Strike,tradeChange NewStrike)
         .Expiry(eo.Expiry.ToString("yyyy-MM-dd"), tradeChange NewExpiry)
@@ -209,25 +230,31 @@ let europeanOptionRow dispatch (model: Model) (tradeId, eo : EuropeanOptionRecor
         .Elt()
 
 
-let asianOptionRow dispatch (tradeId, ao : AsianOptionRecord) =
+let asianOptionRow dispatch (model: Model) (tradeId, ao : AsianOptionRecord) =
     let value = ao.Value |> Option.map (string) |> Option.defaultValue ""
-    let strike =
-        match ao.StrikeType with
-        | Fixed -> sprintf "%.2f" ao.Strike
-        | Floating -> sprintf "%s" "---"
 
     let tradeChange msg s = dispatch <| TradeChange (msg (tradeId,s))
 
+    let showAssetName (name: string) =
+        Templates.AssetNameSelection()
+            .AssetName(name)
+            .Elt()
+
+    let assetNames =
+        model.assetsData
+        |> Map.toSeq
+        |> List.ofSeq
+        |> List.map (fun (k,v) -> k.Split("::")[1])
+
     Templates.AsianOptionsRows()
         .Name(ao.TradeName,tradeChange NewName)
-        .Spot(sprintf "%.2f" ao.SpotPrice,tradeChange NewSpotPrice)
-        .Strike(strike,tradeChange NewStrike)
-        .Drift(sprintf "%.2f" ao.Drift, tradeChange NewDrift)
-        .Volatility(sprintf "%.2f" ao.Volatility, tradeChange NewVolatility)
-        .Expiry(sprintf "%A" ao.Expiry, tradeChange NewExpiry)
+        .Asset(ao.Asset,tradeChange NewAsset)
+        .AssetNames(forEach assetNames showAssetName)
+        .Strike(sprintf "%.2f" ao.Strike,tradeChange NewStrike)
+        .Expiry(ao.Expiry.ToString("yyyy-MM-dd"), tradeChange NewExpiry)
         .Currency(ao.Currency, tradeChange NewCurrency)
-        .StrikeType(AsianOption.strikeTypeToString ao.StrikeType, tradeChange NewStrikeType)
         .ValuationMethod(AsianOption.valuationMethodToString ao.ValuationMethod, tradeChange NewValuationMethod)
+        .StrikeType(AsianOption.strikeTypeToString ao.StrikeType, tradeChange NewStrikeType)
         .OptionType(string ao.OptionType, tradeChange NewOptionType)
         .Value(value)
         .Delete(fun e -> dispatch (RemoveTrade tradeId))
@@ -305,51 +332,6 @@ let configureChart dispatch (model : Model, europeanOptions : list<TradeID * Eur
         .Elt()
 
 
-// let homePage (model: Model) dispatch =
-
-//     let payments = onlyPayments model.trades
-//     let europeanOptions = onlyEuropeanOptions model.trades
-//     let asianOptions = onlyAsianOptions model.trades
-
-//     let paymentsView = 
-//         Templates.Payments()
-//             .AddPayment(fun _ -> dispatch AddPayment)
-//             // .RecalculateAll(fun _ -> dispatch RecalculateAll)
-//             .RecalculateAll(fun _ -> dispatch RecalculateAllPayments)
-//             .PaymentRows(forEach payments (paymentRow dispatch))
-//             .Elt()
-//     let europeanOptionsView = 
-//         Templates.EuropeanOptions()
-//             .AddEuropeanOption(fun _ -> dispatch AddEuropeanOption)
-//             // .RecalculateAll(fun _ -> dispatch RecalculateAll)
-//             .RecalculateAll(fun _ -> dispatch RecalculateAllEO)
-//             .EuropeanOptionsRows(forEach europeanOptions (europeanOptionRow dispatch))
-//             .Elt()
-//     let asianOptionsView = 
-//         Templates.AsianOptions()
-//             .AddAsianOption(fun _ -> dispatch AddAsianOption)
-//             // .RecalculateAll(fun _ -> dispatch RecalculateAll)
-//             .RecalculateAll(fun _ -> dispatch RecalculateAllAO)
-//             .AsianOptionsRows(forEach asianOptions (asianOptionRow dispatch))
-//             .Elt()
-    
-
-//     Templates.Home()
-//      .SummaryPlaceholder(summaryPayments model dispatch)
-//      .PaymentsPlaceholder(paymentsView)
-//      .EuropeanOptionsPlaceholder(europeanOptionsView)
-//      .AsianOptionsPlaceholder(asianOptionsView)
-//     //  .MarketDataPlaceholder(marketDataDisplay model.marketData dispatch)
-//      .EOChartConfigPlaceholder(configureChart dispatch (model, europeanOptions))
-//      .DrawChart(fun _ -> dispatch DrawChart)
-//      .ChartsPlaceholder(
-//         if model.showChart then
-//             plotLineChart model.chart
-//         else
-//             Html.empty())
-//      .Elt()
-
-
 let paymentsPage (model: Model) dispatch =
 
     let payments = onlyPayments model.trades
@@ -399,11 +381,11 @@ let asianOptionsPage (model: Model) dispatch =
         Templates.AsianOptions()
             .AddAsianOption(fun _ -> dispatch AddAsianOption)
             .RecalculateAll(fun _ -> dispatch RecalculateAllAO)
-            .AsianOptionsRows(forEach asianOptions (asianOptionRow dispatch))
+            .AsianOptionsRows(forEach asianOptions (asianOptionRow dispatch model))
             .Elt() 
 
     Templates.AsianOptionsView()
-     .SummaryPlaceholder(summary model "Summary [Asian Options]" dispatch)
+     .SummaryPlaceholder(summaryAsianOptions model "Summary [Asian Options]" dispatch)
      .AsianOptionsPlaceholder(asianOptionsView)
      .Elt()
 

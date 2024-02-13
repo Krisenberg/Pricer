@@ -98,7 +98,6 @@
               <td>
                 <div class="select is-normal">
                   <select bind-onchange="${Asset}">
-                    <!-- <option selected disabled hidden></option> -->
                     ${AssetNames}
                     <template id="AssetNameSelection">
                       <option value="${AssetName}">${AssetName}</option>
@@ -106,11 +105,6 @@
                   </select>
                 </div>
               </td>
-              <!-- <td>
-                <div class="field">
-                  <input class="input" type="text" placeholder="AAPL" bind-onchange="${Asset}"/>
-                </div>
-              </td> -->
               <td>
                 <div class="field">
                   <input class="input" type="text" placeholder="100.0" bind-onchange="${Strike}"/>
@@ -160,50 +154,90 @@
   <template id="AsianOptions">
     <div class="content">
       <h1 class="title">Asian Options</h1>
-      <button class="rz-button rz-secondary rz-ripple rz-border-radius-1" onclick="${RecalculateAll}">Recalculate All</button>
-      <button class="rz-button rz-secondary rz-ripple rz-border-radius-1" onclick="${AddAsianOption}">Add New</button>
-      <table class="rz-grid-table" style="margin-top: 15px; width: 60%; min-width: 800px;">
+      <button class="custom-button" onclick="${RecalculateAll}">
+        <i class="fa-solid fa-rotate-right"></i>
+        Recalculate All
+      </button>
+      <button class="custom-button" onclick="${AddAsianOption}">
+        <i class="fa-solid fa-circle-plus"></i>
+        Add New
+      </button>
+      <table class="rz-grid-table" style="margin-top: 15px; width: 75%; min-width: 1000px;">
         <tbody>
           <tr>
-            <th></th>
-            <th style="width: 10%;">Name</th>
-            <th style="width: 5%;">Spot</th>
-            <th style="width: 5%;">Strike</th>
-            <th style="width: 5%;">Drift(%)</th>
-            <th style="width: 5%;">Vol.(%)</th>
-            <th style="width: 10%;">Expiry</th>
-            <th style="width: 8%;">Currency</th>
+            <th style="width: 5%;"></th>
+            <th style="width: 20%;">Name</th>
+            <th style="width: 10%;">Asset</th>
+            <th style="width: 10%;">Strike</th>
+            <th style="width: 12%;">Expiry</th>
+            <th style="width: 10%;">Currency</th>
+            <th style="width: 12%;">Val. Method</th>
             <th style="width: 10%;">Strike Type</th>
-            <th style="width: 9%;">Val. Method</th>
-            <th style="width: 9%;">Option Type</th>
+            <th style="width: 10%;">Option Type</th>
             <th style="width: 10%;">Value</th>
           </tr>
           <template id="AsianOptionsRows">
             <tr>
-              <td><button class="rz-button rz-ripple rz-border-radius-1" onclick="${Delete}">X</button></td>
-              <td><input bind-onchange="${Name}" style="width: 150px;"/></td>
-              <td><input bind-onchange="${Spot}" style="width: 60px;"/></td>
-              <td><input bind-onchange="${Strike}" style="width: 60px;"/></td>
-              <td><input bind-onchange="${Drift}" style="width: 50px;"/></td>
-              <td><input bind-onchange="${Volatility}" style="width: 50px;"/></td>
-              <td><input bind-onchange="${Expiry}" style="width: 150px;"/></td>
-              <td><input bind-onchange="${Currency}" style="width: 40px;"/></td>
               <td>
-                <select bind-onchange="${StrikeType}" style="width: 200px;">
+                <i class="delete-button fa-solid fa-circle-xmark fa-lg" onclick="${Delete}"></i>
+              </td>
+              <td>
+                <div class="field">
+                  <input class="input" type="text" placeholder="AsianOption123" bind-onchange="${Name}"/>
+                </div>
+              </td>
+              <td>
+                <div class="select is-normal">
+                  <select bind-onchange="${Asset}">
+                    ${AssetNames}
+                    <template id="AssetNameSelection">
+                      <option value="${AssetName}">${AssetName}</option>
+                    </template>
+                  </select>
+                </div>
+              </td>
+              <td>
+                <div class="field">
+                  <input class="input" type="text" placeholder="100.0" bind-onchange="${Strike}"/>
+                </div>
+              </td>
+              <td>
+                <div class="field">
+                  <input class="input" type="date" placeholder="Expiry date" bind-onchange="${Expiry}">
+                </div>
+              </td>
+              <td>
+                <div class="field">
+                  <input class="input" type="text" placeholder="USD" list="currencies" bind-onchange="${Currency}"/>
+                  <datalist id="currencies">
+                    <option>USD</option>
+                    <option>EUR</option>
+                    <option>PLN</option>
+                  </datalist>
+                </div>
+              </td>
+              <td>
+                <div class="select is-normal">
+                  <select bind-onchange="${ValuationMethod}">
+                    <option value="Monte Carlo">Monte Carlo</option>
+                  </select>
+                </div>
+              </td>
+              <td>
+                <div class="select is-normal">
+                  <select bind-onchange="${StrikeType}">
                     <option value="Fixed">Fixed Strike</option>
                     <option value="Floating">Floating Strike</option>
-                </select>
+                  </select>
+                </div>
               </td>
               <td>
-                <select bind-onchange="${ValuationMethod}" style="width: 150px;">
-                    <option value="Monte Carlo">Monte Carlo</option>
-                </select>
-              </td>
-              <td>
-                <select bind-onchange="${OptionType}" style="width: 80px;">
+                <div class="select is-normal">
+                  <select bind-onchange="${OptionType}">
                     <option value="Call">Call</option>
                     <option value="Put">Put</option>
-                </select>
+                  </select>
+                </div>
               </td>
               <td>${Value}</td>
             </tr>
@@ -253,7 +287,6 @@
                 <input class="input" type="text" bind-onchange="${Value}"/>
               </div>
             </td>
-            <!-- <td><input bind-onchange="${Value}"/></td> -->
           </tr>
         </template>
       </tbody>
@@ -285,8 +318,6 @@
                 <input class="input" type="text" bind-onchange="${Vol}"/>
               </div>
             </td>
-            <!-- <td><input bind-onchange="${Spot}"/></td>
-            <td><input bind-onchange="${Vol}"/></td> -->
           </tr>
         </template>
       </tbody>
@@ -319,13 +350,6 @@
                     </template>
                   </select>
                 </div>
-                <!-- <select bind-onchange="${TradeName}" style="width: 225px;">
-                  <option selected disabled hidden></option>
-                  ${Names}
-                  <template id="NameSelection">
-                    <option value="${Name}">${Name}</option>
-                  </template>
-                </select> -->
               </td>
               <td>
                 <div class="select is-normal">
@@ -337,13 +361,6 @@
                     <option value="Time">Time (Months)</option>
                   </select>
                 </div>
-                <!-- <select bind-onchange="${Xaxis}" style="width: 180px;">
-                    <option value="Spot Price">Spot Price</option>
-                    <option value="Strike Price">Strike</option>
-                    <option value="Volatility">Volatility</option>
-                    <option value="Drift">Drift</option>
-                    <option value="Time">Time (Months)</option>
-                </select> -->
               </td>
               <td>
                 <div class="select is-normal">
@@ -352,10 +369,6 @@
                     <option value="Delta">Delta</option>
                   </select>
                 </div>
-                <!-- <select bind-onchange="${Yaxis}" style="width: 100px;">
-                    <option value="Value">Value</option>
-                    <option value="Delta">Delta</option>
-                </select> -->
               </td>
               <td>
                 <div class="field">
@@ -367,8 +380,6 @@
                   <input class="input" type="text" placeholder="300.0" bind-onchange="${XaxisHigh}"/>
                 </div>
               </td>
-              <!-- <td><input bind-onchange="${XaxisLow}" style="width: 100px;"/></td>
-              <td><input bind-onchange="${XaxisHigh}" style="width: 100px;"/></td> -->
             </tr>
           </template>
         </tbody>
@@ -398,7 +409,7 @@
 
   <template id="AsianOptionsView">
     <div class="content">
-      ${SummaryPlaceholder}
+      <div style="margin-bottom: 120px;">${SummaryPlaceholder}</div>
       ${AsianOptionsPlaceholder}
     </div>
   </template>
