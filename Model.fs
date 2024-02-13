@@ -20,7 +20,9 @@ type UITrade =
 
 /// Routing endpoints definition.
 type Page =
-    | [<EndPoint "/">] Home
+    | [<EndPoint "/">] EuropeanOptions
+    | [<EndPoint "/asianOptions">] AsianOptions
+    | [<EndPoint "/payments">] Payments
     | [<EndPoint "/summary">] Summary
     | [<EndPoint "/marketData">] MarketData
     | [<EndPoint "/config">] Config
@@ -31,6 +33,7 @@ type Model =
         page: Page
         trades : Map<TradeID,UITrade>
         marketData: MarketData
+        assetsData: AssetsData
         configuration : Configuration
         chart : ChartData
         showChart: bool
@@ -39,9 +42,10 @@ type Model =
 
     static member Initial = 
       {
-          page = Home
+          page = EuropeanOptions
           trades = Map.empty
           marketData = Map.empty
+          assetsData = Map.empty
           configuration = Map.empty
           chart = ChartData.Default
           showChart = false

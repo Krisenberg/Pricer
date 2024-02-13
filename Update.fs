@@ -31,7 +31,7 @@ let getTradeName (trade : UITrade) =
 let checkTradeNumbers (trade : UITrade) =
     match trade.trade with
     | Payment p -> p.Principal > 0
-    | EuropeanOption eo -> (eo.SpotPrice > 0.0 && eo.Strike > 0.0 && eo.Volatility > 0.0)
+    | EuropeanOption eo -> eo.Strike > 0.0
     | AsianOption ao -> (ao.SpotPrice > 0.0 && ao.Strike > 0.0 && ao.Volatility > 0.0)
 
 let changeTradePosiviteNumber (trades : Map<TradeID,UITrade>) id f =
@@ -53,6 +53,14 @@ let tradeChangeUpdate (model : Model) = function
                                 | Payment p -> Some <| Payment { p with TradeName = name}
                                 | EuropeanOption eo -> Some <| EuropeanOption { eo with TradeName = name}
                                 | AsianOption ao -> Some <| AsianOption { ao with TradeName = name}
+                            )
+            )
+    
+    | NewAsset (id,asset) ->
+        changeTrade model.trades id 
+                (Trades.tryMap ( function
+                                | EuropeanOption eo -> Some <| EuropeanOption { eo with Asset = asset}
+                                | _ -> None
                             )
             )
 
@@ -99,11 +107,11 @@ let tradeChangeUpdate (model : Model) = function
     | NewSpotPrice (id,spot) ->
         changeTradePosiviteNumber model.trades id 
                 (Trades.tryMap ( function
-                                | EuropeanOption eo -> 
-                                    Double.TryParse(spot.Replace('.', ','))
-                                    |> Utils.ofBool
-                                    |> Option.map (fun spot ->
-                                            EuropeanOption { eo with SpotPrice = spot})
+                                // | EuropeanOption eo -> 
+                                //     Double.TryParse(spot.Replace('.', ','))
+                                //     |> Utils.ofBool
+                                //     |> Option.map (fun spot ->
+                                //             EuropeanOption { eo with SpotPrice = spot})
                                 | AsianOption ao -> 
                                     Double.TryParse(spot.Replace('.', ','))
                                     |> Utils.ofBool
@@ -129,11 +137,11 @@ let tradeChangeUpdate (model : Model) = function
     | NewDrift (id,drift) ->
         changeTrade model.trades id 
                 (Trades.tryMap ( function
-                                | EuropeanOption eo -> 
-                                    Double.TryParse(drift.Replace('.', ','))
-                                    |> Utils.ofBool
-                                    |> Option.map (fun drift ->
-                                            EuropeanOption { eo with Drift = drift})
+                                // | EuropeanOption eo -> 
+                                //     Double.TryParse(drift.Replace('.', ','))
+                                //     |> Utils.ofBool
+                                //     |> Option.map (fun drift ->
+                                //             EuropeanOption { eo with Drift = drift})
                                 | AsianOption ao -> 
                                     Double.TryParse(drift.Replace('.', ','))
                                     |> Utils.ofBool
@@ -144,11 +152,11 @@ let tradeChangeUpdate (model : Model) = function
     | NewVolatility (id,volatility) ->
         changeTradePosiviteNumber model.trades id 
                 (Trades.tryMap ( function
-                                | EuropeanOption eo -> 
-                                    Double.TryParse(volatility.Replace('.', ','))
-                                    |> Utils.ofBool
-                                    |> Option.map (fun volatility ->
-                                            EuropeanOption { eo with Volatility = volatility})
+                                // | EuropeanOption eo -> 
+                                //     Double.TryParse(volatility.Replace('.', ','))
+                                //     |> Utils.ofBool
+                                //     |> Option.map (fun volatility ->
+                                //             EuropeanOption { eo with Volatility = volatility})
                                 | AsianOption ao -> 
                                     Double.TryParse(volatility.Replace('.', ','))
                                     |> Utils.ofBool
@@ -203,7 +211,7 @@ let changeChart (model : Model, newTrades : Map<TradeID,UITrade>) (id : TradeID)
     if (not (Array.isEmpty model.chart.Trades) && id = model.chart.Trades.[0]) then
         let eoRecordOpt = id |> findEOTrade(newTrades)
         match eoRecordOpt with
-        | Some eoRecord -> makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, [|eoRecord|], model.chart.Trades,model.chart.ScopeX, model.configuration, model.marketData)
+        | Some eoRecord -> makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, [|eoRecord|], model.chart.Trades,model.chart.ScopeX, model.configuration, model.marketData, model.assetsData)
         | None -> model.chart
     else
         model.chart
@@ -214,7 +222,7 @@ let chartChangeUpdate (model : Model) = function
                                     tradeID
                                     |> findEOTrade(model.trades)
                                     |> Option.map (fun eoRecord ->
-                                    makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, [|eoRecord|], [|tradeID|], model.chart.ScopeX, model.configuration, model.marketData))
+                                    makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, [|eoRecord|], [|tradeID|], model.chart.ScopeX, model.configuration, model.marketData, model.assetsData))
     | NewItemXaxis item -> 
                                     match (Array.isEmpty model.chart.Trades) with
                                     | true ->
@@ -223,12 +231,12 @@ let chartChangeUpdate (model : Model) = function
                                                     match itemXaxis with
                                                     | Some Drift | Some Volatility | Some Time ->
                                                         match model.chart.ItemX with
-                                                        | Drift | Volatility | Time -> (item, model.chart.ItemY, [||], [||],model.chart.ScopeX, model.configuration, model.marketData)
-                                                        | _ -> (item, model.chart.ItemY, [||], [||],(0.01,40.00), model.configuration, model.marketData)
+                                                        | Drift | Volatility | Time -> (item, model.chart.ItemY, [||], [||],model.chart.ScopeX, model.configuration, model.marketData, model.assetsData)
+                                                        | _ -> (item, model.chart.ItemY, [||], [||],(0.01,40.00), model.configuration, model.marketData, model.assetsData)
                                                     | _ ->
                                                         match model.chart.ItemX with
-                                                        | Drift | Volatility | Time-> (item, model.chart.ItemY, [||], [||],(0.01,300.00), model.configuration, model.marketData)
-                                                        | _ -> (item, model.chart.ItemY, [||], [||],model.chart.ScopeX, model.configuration, model.marketData)
+                                                        | Drift | Volatility | Time-> (item, model.chart.ItemY, [||], [||],(0.01,300.00), model.configuration, model.marketData, model.assetsData)
+                                                        | _ -> (item, model.chart.ItemY, [||], [||],model.chart.ScopeX, model.configuration, model.marketData, model.assetsData)
                                                 itemXaxis
                                                 |> Option.map (fun item ->
                                                 makeEuropeanOptionsChart(args(item)))
@@ -238,12 +246,12 @@ let chartChangeUpdate (model : Model) = function
                                                     match itemXaxis with
                                                     | Some Drift | Some Volatility | Some Time ->
                                                         match model.chart.ItemX with
-                                                        | Drift | Volatility | Time -> (item, model.chart.ItemY, [|record|], model.chart.Trades,model.chart.ScopeX, model.configuration, model.marketData)
-                                                        | _ -> (item, model.chart.ItemY, [|record|], model.chart.Trades,(0.01,40.0), model.configuration, model.marketData)
+                                                        | Drift | Volatility | Time -> (item, model.chart.ItemY, [|record|], model.chart.Trades,model.chart.ScopeX, model.configuration, model.marketData, model.assetsData)
+                                                        | _ -> (item, model.chart.ItemY, [|record|], model.chart.Trades,(0.01,40.0), model.configuration, model.marketData, model.assetsData)
                                                     | _ ->
                                                         match model.chart.ItemX with
-                                                        | Drift | Volatility | Time -> (item, model.chart.ItemY, [|record|], model.chart.Trades,(0.01,300.0), model.configuration, model.marketData)
-                                                        | _ -> (item, model.chart.ItemY, [|record|], model.chart.Trades,model.chart.ScopeX, model.configuration, model.marketData)
+                                                        | Drift | Volatility | Time -> (item, model.chart.ItemY, [|record|], model.chart.Trades,(0.01,300.0), model.configuration, model.marketData, model.assetsData)
+                                                        | _ -> (item, model.chart.ItemY, [|record|], model.chart.Trades,model.chart.ScopeX, model.configuration, model.marketData, model.assetsData)
                                                 let eoRecordOpt = findEOTrade model.trades model.chart.Trades[0]
                                                 (eoRecordOpt, itemXaxis)
                                                 |> Utils.optionMapTuple (fun (eoRecord, item) ->
@@ -254,12 +262,12 @@ let chartChangeUpdate (model : Model) = function
                                     | true ->
                                                 parseItemYaxis(item)
                                                 |> Option.map (fun item ->
-                                                makeEuropeanOptionsChart(model.chart.ItemX, item, [||], [||],model.chart.ScopeX, model.configuration, model.marketData))
+                                                makeEuropeanOptionsChart(model.chart.ItemX, item, [||], [||],model.chart.ScopeX, model.configuration, model.marketData, model.assetsData))
                                     | false ->
                                                 let eoRecordOpt = findEOTrade model.trades model.chart.Trades[0]
                                                 (eoRecordOpt, parseItemYaxis(item))
                                                 |> Utils.optionMapTuple (fun (eoRecord, item) ->
-                                                makeEuropeanOptionsChart(model.chart.ItemX, item, [|eoRecord|], model.chart.Trades,model.chart.ScopeX, model.configuration, model.marketData))
+                                                makeEuropeanOptionsChart(model.chart.ItemX, item, [|eoRecord|], model.chart.Trades,model.chart.ScopeX, model.configuration, model.marketData, model.assetsData))
     | NewScopeX scope   -> 
                                     match (Array.isEmpty model.chart.Trades) with
                                     | true ->
@@ -268,19 +276,20 @@ let chartChangeUpdate (model : Model) = function
                                                 |> Utils.tryParseTupleFloats 
                                                 |> Utils.ofBoolTuple
                                                 |> Utils.optionMapTuple (fun (xLow, xHigh) ->
-                                                makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, [||],[||], (xLow, xHigh), model.configuration, model.marketData))
+                                                makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, [||],[||], (xLow, xHigh), model.configuration, model.marketData, model.assetsData))
                                     | false ->
                                                 let eoRecordOpt = findEOTrade model.trades model.chart.Trades[0]
                                                 let (scopeXlow, scopeXhigh)=(scope.Split(';').[0], scope.Split(';').[1])
                                                 let parsedScopeLow, parsedScopeHigh = (scopeXlow, scopeXhigh) |> Utils.tryParseTupleFloats |> Utils.ofBoolTuple
                                                 (eoRecordOpt,parsedScopeLow, parsedScopeHigh)
                                                 |> Utils.optionMapTriple (fun (eoRecord, xLow, xHigh) ->
-                                                makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, [|eoRecord|],model.chart.Trades, (xLow, xHigh), model.configuration, model.marketData))
+                                                makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, [|eoRecord|],model.chart.Trades, (xLow, xHigh), model.configuration, model.marketData, model.assetsData))
 
 
 let mapIDwithFunc (msg : TradeChangeMsg) func =
     match msg with
     | NewName (tradeID, _) -> tradeID |> func
+    | NewAsset (tradeID, _) -> tradeID |> func
     | NewPrincipal (tradeID, _) -> tradeID |> func
     | NewCurrency (tradeID, _) -> tradeID |> func
     | NewExpiry (tradeID, _) -> tradeID |> func
@@ -313,7 +322,7 @@ let update (http: HttpClient) message model =
         if (not (Array.isEmpty model.chart.Trades) && model.chart.Trades.[0] = tradeId) then
             { model with
                 trades = newTrades
-                chart = makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, [||], [||], model.chart.ScopeX, model.configuration, model.marketData)
+                chart = makeEuropeanOptionsChart(model.chart.ItemX, model.chart.ItemY, [||], [||], model.chart.ScopeX, model.configuration, model.marketData, model.assetsData)
             }, Cmd.none
         else
             { model with
@@ -338,7 +347,8 @@ let update (http: HttpClient) message model =
         let md = model.marketData
         let md' = Map.add key value md
         // { model with marketData = md'}, Cmd.ofMsg RecalculateAll
-        { model with marketData = md'}, Cmd.batch [Cmd.ofMsg RecalculateAllPayments; Cmd.ofMsg RecalculateAllEO]
+        { model with marketData = md'}, Cmd.batch [Cmd.ofMsg RecalculateAllPayments; Cmd.ofMsg RecalculateAllEO; Cmd.ofMsg RecalculateAllAO]
+
     | GotMarketData response ->
         let c = response |> 
                 Array.collect (fun cat -> 
@@ -350,9 +360,26 @@ let update (http: HttpClient) message model =
     | LoadData ->
         let getConfig() = http.GetFromJsonAsync<JsonConfig>("/configuration.json?v=1")
         let conf = Cmd.OfTask.either getConfig () GotConfig Error
-        let getMDConfig() = http.GetFromJsonAsync<JsonConfig>("/marketDataConfig.json?v=1")
+        let getMDConfig() = http.GetFromJsonAsync<JsonConfig>("/marketDataConfig.json?v=2")
         let mdConf = Cmd.OfTask.either getMDConfig () GotMarketData Error
-        { model with configuration = Map.empty }, Cmd.batch [conf; mdConf]
+        let getAD() = http.GetFromJsonAsync<JsonAssets>("/assets.json?v=3")
+        let ad = Cmd.OfTask.either getAD () GotAssetsData Error
+        { model with configuration = Map.empty }, Cmd.batch [conf; mdConf; ad]
+
+    | GotAssetsData response -> 
+        let c = response |> 
+                Array.collect (fun cat -> 
+                    cat.Assets
+                    |> Array.map (fun {Key = k; Spot = s; Vol = v} ->
+                        sprintf "%s::%s" cat.Category k, { Spot = s; Vol = v }))
+                |> Map.ofArray
+        { model with assetsData = c }, Cmd.none
+    
+    | AssetsDataChange (key, spot, vol) ->
+        let ad = model.assetsData
+        let ad' = Map.add key { Spot = spot; Vol = vol } ad
+        { model with assetsData = ad'}, Cmd.batch [Cmd.ofMsg RecalculateAllPayments; Cmd.ofMsg RecalculateAllEO; Cmd.ofMsg RecalculateAllAO]
+
     | GotConfig response -> 
         let c = response |> 
                 Array.collect (fun cat -> 
@@ -379,7 +406,7 @@ let update (http: HttpClient) message model =
              model.trades
              |> Map.map (fun (ID : TradeID) (uiTrade : UITrade)  -> 
                             match uiTrade.trade with
-                            | Payment _-> Trades.map (valuateTrade model.configuration model.marketData) uiTrade
+                            | Payment _-> Trades.map (valuateTrade model.configuration model.marketData model.assetsData) uiTrade
                             | _ -> uiTrade)
         if (not (Array.isEmpty model.chart.Trades)) then
             { model with 
@@ -395,7 +422,7 @@ let update (http: HttpClient) message model =
              model.trades
              |> Map.map (fun (ID : TradeID) (uiTrade : UITrade)  -> 
                             match uiTrade.trade with
-                            | EuropeanOption _-> Trades.map (valuateTrade model.configuration model.marketData) uiTrade
+                            | EuropeanOption _-> Trades.map (valuateTrade model.configuration model.marketData model.assetsData) uiTrade
                             | _ -> uiTrade)
         if (not (Array.isEmpty model.chart.Trades)) then
             { model with 
@@ -411,13 +438,13 @@ let update (http: HttpClient) message model =
              model.trades
              |> Map.map (fun (ID : TradeID) (uiTrade : UITrade)  -> 
                             match uiTrade.trade with
-                            | AsianOption _-> Trades.map (valuateTrade model.configuration model.marketData) uiTrade
+                            | AsianOption _-> Trades.map (valuateTrade model.configuration model.marketData model.assetsData) uiTrade
                             | _ -> uiTrade)
         { model with trades = trades }, Cmd.none
     | RecalculateTrade tradeId ->
         match Map.tryFind tradeId model.trades with
         | Some trade ->
-            let updatedTrade = valuateTrade model.configuration model.marketData trade.trade
+            let updatedTrade = valuateTrade model.configuration model.marketData model.assetsData trade.trade
             let updatedUITrade = { 
                 trade = updatedTrade
                 id = tradeId

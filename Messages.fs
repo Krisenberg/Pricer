@@ -6,6 +6,7 @@ open Trades
 
 type TradeChangeMsg =
     | NewName of TradeID * string
+    | NewAsset of TradeID * string
     | NewPrincipal of TradeID * string
     | NewCurrency of TradeID * string
     | NewExpiry of TradeID * string
@@ -42,6 +43,8 @@ type Message =
     | ConfigChange of string * string
     | GotMarketData of JsonConfig
     | MarketDataChange of string * string
+    | GotAssetsData of JsonAssets
+    | AssetsDataChange of string * string * string
     | Warning of string
     | Error of exn
     | ClearError

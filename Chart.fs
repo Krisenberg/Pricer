@@ -88,7 +88,7 @@ let itemXaxisToString (item : itemsXaxis) =
   | Drift -> "Drift"
   | Time -> "Time"
 
-let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, data, marketData) : ChartData =
+let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, data, marketData, assetsData) : ChartData =
     let scopeXlow, scopeXhigh = scopeX
 
     let makeSeries(eo : EuropeanOptionRecord) : Series =
@@ -100,6 +100,7 @@ let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, 
             Trade = eo
             Data = data
             MarketData = marketData
+            AssetsData = assetsData
           }
         EuropeanOptionValuationModel(inputs)
 
@@ -109,16 +110,18 @@ let makeEuropeanOptionsChart (itemXaxis, itemYaxis, eoTrade, eoTradeID, scopeX, 
 
       let calcFunc =
         match itemYaxis with
-          | Value -> valuationModel.Calculate >> fst >> getMoneyValue
-          | Delta -> valuationModel.Calculate >> snd
+          | Value -> valuationModel.Simulate >> fst >> getMoneyValue
+          | Delta -> valuationModel.Simulate >> snd
 
       let args xAxisArg =
+        let drift = Configuration.marketDrift marketData
+        let (assetSpot, assetVol) = Configuration.assetValues eo.Asset assetsData
         match itemXaxis with
-          | SpotPrice -> (xAxisArg, eo.Strike, eo.Drift, eo.Volatility, eo.Expiry)
-          | StrikePrice -> (eo.SpotPrice, xAxisArg, eo.Drift, eo.Volatility, eo.Expiry)
-          | Drift -> (eo.SpotPrice, eo.Strike, xAxisArg, eo.Volatility, eo.Expiry)
-          | Volatility -> (eo.SpotPrice, eo.Strike, eo.Drift, xAxisArg, eo.Expiry)
-          | Time -> (eo.SpotPrice, eo.Strike, eo.Drift, eo.Volatility, (convertIntToDateTime (xAxisArg)))
+          | SpotPrice -> (xAxisArg, eo.Strike, drift, assetVol, eo.Expiry)
+          | StrikePrice -> (assetSpot, xAxisArg, drift, assetVol, eo.Expiry)
+          | Drift -> (assetSpot, eo.Strike, xAxisArg, assetVol, eo.Expiry)
+          | Volatility -> (assetSpot, eo.Strike, drift, xAxisArg, eo.Expiry)
+          | Time -> (assetSpot, eo.Strike, drift, assetVol, (convertIntToDateTime (xAxisArg)))
 
       //step 1: have a sequence of values (x,y)
       let series =

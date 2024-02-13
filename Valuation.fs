@@ -4,7 +4,7 @@ open Payment
 open EuropeanOption
 open AsianOption
 
-let valuateTrade config marketData (trade : Trade) : Trade =
+let valuateTrade config marketData assetsData (trade : Trade) : Trade =
   match trade with
   | Payment p -> 
       let inputs : PaymentValuationInputs = 
@@ -20,9 +20,10 @@ let valuateTrade config marketData (trade : Trade) : Trade =
         { Trade = eo
           Data = config
           MarketData = marketData
+          AssetsData = assetsData
         }
       let vm = EuropeanOptionValuationModel(inputs)
-      let value, delta = vm.Calculate(eo.SpotPrice, eo.Strike, eo.Drift, eo.Volatility, eo.Expiry)
+      let value, delta = vm.Calculate(eo.Asset, eo.Strike, eo.Expiry)
       EuropeanOption { eo with 
                           Value = Some <| value
                           Delta = Some <| delta}

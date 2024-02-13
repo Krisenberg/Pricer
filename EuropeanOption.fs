@@ -33,10 +33,8 @@ let valuationMethodToString (valuationMethod : ValuationMethod) =
 type EuropeanOptionRecord =
     {
         TradeName       : string
-        SpotPrice       : float
+        Asset           : string
         Strike          : float
-        Drift           : float
-        Volatility      : float
         Expiry          : DateTime
         Currency        : string
         ValuationMethod : ValuationMethod
@@ -57,10 +55,8 @@ type EuropeanOptionRecord =
         
         {
             TradeName       = sprintf "EuropeanOption%04d" (EuropeanOptionRecord.sysRandom.Next(9999))
-            SpotPrice       = EuropeanOptionRecord.sysRandom.Next(10,500)
+            Asset           = "AAPL"
             Strike          = EuropeanOptionRecord.sysRandom.Next(10,500)
-            Drift           = EuropeanOptionRecord.sysRandom.Next(0,30)
-            Volatility      = EuropeanOptionRecord.sysRandom.Next(0,30)
             Expiry          = (DateTime.Now.AddMonths (EuropeanOptionRecord.sysRandom.Next(1, 6))).Date
             Currency        = knownCurrencies.[ EuropeanOptionRecord.sysRandom.Next(knownCurrencies.Length) ]
             ValuationMethod = Formulas
@@ -75,18 +71,18 @@ type EuropeanOptionValuationInputs =
         Trade : EuropeanOptionRecord
         Data : Configuration
         MarketData: MarketData
+        AssetsData: AssetsData
     }
 
 
 type EuropeanOptionValuationModel(inputs: EuropeanOptionValuationInputs) = 
-    
+    let (assetSpot, assetVol) = assetValues inputs.Trade.Asset inputs.AssetsData
     member this.valuationMethod =
         match inputs.Trade.ValuationMethod with
         | Formulas -> this.calculateFormulas
         | MonteCarlo -> this.calculateMonteCarlo
-    
-    member this.drift = this.convertPercentage(inputs.Trade.Drift)
-    member this.volatility = this.convertPercentage(inputs.Trade.Volatility)
+    member this.drift = this.convertPercentage(marketDrift inputs.MarketData)
+    member this.volatility = this.convertPercentage(assetVol)
     member this.time = this.calculateMaturity(inputs.Trade.Expiry)
     member this.currencies = this.prepareCurrencies()
     member this.fxRate = this.currencies |> fst
@@ -207,7 +203,12 @@ type EuropeanOptionValuationModel(inputs: EuropeanOptionValuationInputs) =
         value
 
 
-    member this.Calculate(spot, strike, drift, volatility, time) : Money*float =
+    member this.Calculate(asset, strike, time) : Money*float =
+        let value= this.valuationMethod(assetSpot, strike, this.drift, this.volatility, this.time)
+        let delta = this.calculateDelta(assetSpot, strike, this.drift, this.volatility, this.time)
+        { Value = (value / this.fxRate); Currency = this.finalCcy }, delta
+
+    member this.Simulate(spot, strike, drift, volatility, time) : Money*float =
         let scaled_drift = this.convertPercentage(drift)
         let scaled_volatility = this.convertPercentage(volatility)
         let calculated_time = this.calculateMaturity(time)

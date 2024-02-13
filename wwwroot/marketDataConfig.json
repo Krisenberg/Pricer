@@ -22,11 +22,11 @@
     ]
   },
   {
-    "category":"MD",
+    "category":"parameters",
     "config":
     [
       {
-        "key":"DRIFT",
+        "key":"drift",
         "value":"6.69"
       }
     ]
