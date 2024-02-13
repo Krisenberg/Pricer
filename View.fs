@@ -88,7 +88,8 @@ let plotLineChart (data : ChartData) =
           }
     
     comp<RadzenChart> {
-        "Style" => "width: 1300px; height: 450px"
+        // "Style" => "width: 75%; min-width: 1000px; height: 450px"
+        "Style" => "width: 75%; min-width: 1000px"
         attr.fragment "ChildContent" childContent
     }
 
@@ -132,6 +133,7 @@ let summaryPayments (model: Model) (name:string) dispatch =
             .Value(text <| sprintf "%.2f" sum)
             .Elt()
     Templates.Summary()
+        .Title(name)
         .Rows(forEach groupedByCCy summaryRow)
         .Elt()
 
@@ -153,6 +155,7 @@ let summaryEuropeanOptions (model: Model) (name:string) dispatch =
             .Value(text <| sprintf "%.2f" sum)
             .Elt()
     Templates.Summary()
+        .Title(name)
         .Rows(forEach groupedByCCy summaryRow)
         .Elt()
 
@@ -172,7 +175,7 @@ let paymentRow dispatch (tradeId, p : PaymentRecord) =
         .Elt()
 
 
-let europeanOptionRow dispatch (tradeId, eo : EuropeanOptionRecord) =
+let europeanOptionRow dispatch (model: Model) (tradeId, eo : EuropeanOptionRecord) =
     let value = eo.Value |> Option.map (string) |> Option.defaultValue "" 
     let delta = match eo.Delta with
                         | Some delta -> System.Math.Round (delta, 2) |> string
@@ -180,9 +183,21 @@ let europeanOptionRow dispatch (tradeId, eo : EuropeanOptionRecord) =
 
     let tradeChange msg s = dispatch <| TradeChange (msg (tradeId,s))
 
+    let showAssetName (name: string) =
+        Templates.AssetNameSelection()
+            .AssetName(name)
+            .Elt()
+
+    let assetNames =
+        model.assetsData
+        |> Map.toSeq
+        |> List.ofSeq
+        |> List.map (fun (k,v) -> k.Split("::")[1])
+
     Templates.EuropeanOptionsRows()
         .Name(eo.TradeName,tradeChange NewName)
-        .Asset(eo.Asset,tradeChange NewAsset)
+        // .Asset(eo.Asset,tradeChange NewAsset)
+        .AssetNames(forEach assetNames showAssetName)
         .Strike(sprintf "%.2f" eo.Strike,tradeChange NewStrike)
         .Expiry(eo.Expiry.ToString("yyyy-MM-dd"), tradeChange NewExpiry)
         .Currency(eo.Currency, tradeChange NewCurrency)
@@ -360,7 +375,7 @@ let europeanOptionsPage (model: Model) dispatch =
         Templates.EuropeanOptions()
             .AddEuropeanOption(fun _ -> dispatch AddEuropeanOption)
             .RecalculateAll(fun _ -> dispatch RecalculateAllEO)
-            .EuropeanOptionsRows(forEach europeanOptions (europeanOptionRow dispatch))
+            .EuropeanOptionsRows(forEach europeanOptions (europeanOptionRow dispatch model))
             .Elt()    
 
     Templates.EuropeanOptionsView()

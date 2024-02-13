@@ -96,10 +96,21 @@
                 </div>
               </td>
               <td>
+                <div class="select is-normal">
+                  <select bind-onchange="${Asset}">
+                    <!-- <option selected disabled hidden></option> -->
+                    ${AssetNames}
+                    <template id="AssetNameSelection">
+                      <option value="${AssetName}">${AssetName}</option>
+                    </template>
+                  </select>
+                </div>
+              </td>
+              <!-- <td>
                 <div class="field">
                   <input class="input" type="text" placeholder="AAPL" bind-onchange="${Asset}"/>
                 </div>
-              </td>
+              </td> -->
               <td>
                 <div class="field">
                   <input class="input" type="text" placeholder="100.0" bind-onchange="${Strike}"/>
@@ -107,7 +118,7 @@
               </td>
               <td>
                 <div class="field">
-                  <input class="input" type="date" placeholder="Expiry date" bind-onchange="${Expiry}" onchange="checkFutureDate(this)">
+                  <input class="input" type="date" placeholder="Expiry date" bind-onchange="${Expiry}">
                 </div>
               </td>
               <td>
@@ -128,12 +139,6 @@
                   </select>
                 </div>
               </td>
-              <!-- <td>
-                <select bind-onchange="${ValuationMethod}" style="width: 150px;">
-                    <option value="Analytical">Analytical</option>
-                    <option value="Monte Carlo">Monte Carlo</option>
-                </select>
-              </td> -->
               <td>
                 <div class="select is-normal">
                   <select bind-onchange="${OptionType}">
@@ -142,12 +147,6 @@
                   </select>
                 </div>
               </td>
-              <!-- <td>
-                <select bind-onchange="${OptionType}" style="width: 80px;">
-                    <option value="Call">Call</option>
-                    <option value="Put">Put</option>
-                </select>
-              </td> -->
               <td>${Value}</td>
               <td>${Delta}</td>
             </tr>
@@ -249,7 +248,12 @@
         <template id="ConfigRow">
           <tr>
             <td>${Key}</td>
-            <td><input bind-onchange="${Value}"/></td>
+            <td>
+              <div class="field">
+                <input class="input" type="text" bind-onchange="${Value}"/>
+              </div>
+            </td>
+            <!-- <td><input bind-onchange="${Value}"/></td> -->
           </tr>
         </template>
       </tbody>
@@ -271,8 +275,18 @@
         <template id="AssetRow">
           <tr>
             <td>${Key}</td>
-            <td><input bind-onchange="${Spot}"/></td>
-            <td><input bind-onchange="${Vol}"/></td>
+            <td>
+              <div class="field">
+                <input class="input" type="text" bind-onchange="${Spot}"/>
+              </div>
+            </td>
+            <td>
+              <div class="field">
+                <input class="input" type="text" bind-onchange="${Vol}"/>
+              </div>
+            </td>
+            <!-- <td><input bind-onchange="${Spot}"/></td>
+            <td><input bind-onchange="${Vol}"/></td> -->
           </tr>
         </template>
       </tbody>
@@ -283,44 +297,78 @@
   <template id="EuropeanOptionsChart">
     <div class="content">
       <h1 class="title">European Options Chart</h1>
-      <table class="rz-grid-table" style="margin-top: 15px; width: 60%; min-width: 800px;">
+      <table class="rz-grid-table" style="margin-top: 15px; width: 50%; min-width: 700px;">
         <tbody>
           <tr>
-            <th style="width: 20%;">Trade Name</th>
+            <th style="width: 30%;">Trade Name</th>
             <th style="width: 20%;">X-axis</th>
             <th style="width: 20%;">Y-axis</th>
-            <th style="width: 20%;">X-axis limit (low)</th>
-            <th style="width: 20%;">X-axis limit (high)</th>
+            <th style="width: 15%;">X-axis limit (low)</th>
+            <th style="width: 15%;">X-axis limit (high)</th>
           </tr>
           ${Config}
           <template id="ChartConfiguration">
             <tr>
               <td>
-                <select bind-onchange="${TradeName}" style="width: 225px;">
+                <div class="select is-normal">
+                  <select bind-onchange="${TradeName}">
+                    <option selected disabled hidden></option>
+                    ${Names}
+                    <template id="NameSelection">
+                      <option value="${Name}">${Name}</option>
+                    </template>
+                  </select>
+                </div>
+                <!-- <select bind-onchange="${TradeName}" style="width: 225px;">
                   <option selected disabled hidden></option>
                   ${Names}
                   <template id="NameSelection">
                     <option value="${Name}">${Name}</option>
                   </template>
-                </select>
+                </select> -->
               </td>
               <td>
-                <select bind-onchange="${Xaxis}" style="width: 180px;">
+                <div class="select is-normal">
+                  <select bind-onchange="${Xaxis}">
                     <option value="Spot Price">Spot Price</option>
                     <option value="Strike Price">Strike</option>
                     <option value="Volatility">Volatility</option>
                     <option value="Drift">Drift</option>
                     <option value="Time">Time (Months)</option>
-                </select>
+                  </select>
+                </div>
+                <!-- <select bind-onchange="${Xaxis}" style="width: 180px;">
+                    <option value="Spot Price">Spot Price</option>
+                    <option value="Strike Price">Strike</option>
+                    <option value="Volatility">Volatility</option>
+                    <option value="Drift">Drift</option>
+                    <option value="Time">Time (Months)</option>
+                </select> -->
               </td>
               <td>
-                <select bind-onchange="${Yaxis}" style="width: 100px;">
+                <div class="select is-normal">
+                  <select bind-onchange="${Yaxis}">
                     <option value="Value">Value</option>
                     <option value="Delta">Delta</option>
-                </select>
+                  </select>
+                </div>
+                <!-- <select bind-onchange="${Yaxis}" style="width: 100px;">
+                    <option value="Value">Value</option>
+                    <option value="Delta">Delta</option>
+                </select> -->
               </td>
-              <td><input bind-onchange="${XaxisLow}" style="width: 100px;"/></td>
-              <td><input bind-onchange="${XaxisHigh}" style="width: 100px;"/></td>
+              <td>
+                <div class="field">
+                  <input class="input" type="text" placeholder="0.0" bind-onchange="${XaxisLow}"/>
+                </div>
+              </td>
+              <td>
+                <div class="field">
+                  <input class="input" type="text" placeholder="300.0" bind-onchange="${XaxisHigh}"/>
+                </div>
+              </td>
+              <!-- <td><input bind-onchange="${XaxisLow}" style="width: 100px;"/></td>
+              <td><input bind-onchange="${XaxisHigh}" style="width: 100px;"/></td> -->
             </tr>
           </template>
         </tbody>
@@ -328,31 +376,19 @@
     </div>
   </template>
 
-  <!-- <template id="Home">
-    <div class="content">
-      ${SummaryPlaceholder}
-      ${PaymentsPlaceholder}
-      ${EuropeanOptionsPlaceholder}
-      ${AsianOptionsPlaceholder}
-      ${EOChartConfigPlaceholder}
-      <button class="rz-button rz-secondary rz-ripple rz-border-radius-1" onclick="${DrawChart}">Show/Hide Chart</button>
-      ${ChartsPlaceholder}
-    </div>
-  </template> -->
-
   <template id="PaymentsView">
     <div class="content">
-      ${SummaryPlaceholder}
+      <div style="margin-bottom: 120px;">${SummaryPlaceholder}</div>
       ${PaymentsPlaceholder}
     </div>
   </template>
 
   <template id="EuropeanOptionsView">
     <div class="content">
-      ${SummaryPlaceholder}
-      ${EuropeanOptionsPlaceholder}
+      <div style="margin-bottom: 120px;">${SummaryPlaceholder}</div>
+      <div style="margin-bottom: 120px;">${EuropeanOptionsPlaceholder}</div>
       ${EOChartConfigPlaceholder}
-      <button class="custom-button" onclick="${DrawChart}">
+      <button style="margin-bottom: 50px;" class="custom-button" onclick="${DrawChart}">
         <i class="fa-solid fa-eye-slash"></i>
         Show/Hide Chart
       </button>
