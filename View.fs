@@ -115,25 +115,46 @@ let summary (model: Model) (name:string) dispatch =
         .Rows(forEach groupedByCCy summaryRow)
         .Elt()
 
-// let summaryPayments (model: Model) dispatch =
-//     let groupedByCCy =
-//         model.trades
-//         |> Map.values
-//         |> Seq.choose (fun x ->
-//             match x.trade with
-//             | Payment p -> p.Value
-//             | _ -> None
-//             )
-//         |> Seq.groupBy (fun m -> m.Currency)
-//     let summaryRow (ccy,values : Money seq) =
-//         let sum = values |> Seq.sumBy (fun v -> v.Value)
-//         Templates.SummaryPaymentsRow()
-//             .CCY(text ccy)
-//             .Value(text <| sprintf "%.2f" sum)
-//             .Elt()
-//     Templates.SummaryPayments()
-//         .Rows(forEach groupedByCCy summaryRow)
-//         .Elt()
+let summaryPayments (model: Model) (name:string) dispatch =
+    let groupedByCCy =
+        model.trades
+        |> Map.values
+        |> Seq.choose (fun x ->
+            match x.trade with
+            | Payment p -> p.Value
+            | _ -> None
+            )
+        |> Seq.groupBy (fun m -> m.Currency)
+    let summaryRow (ccy,values : Money seq) =
+        let sum = values |> Seq.sumBy (fun v -> v.Value)
+        Templates.SummaryRow()
+            .CCY(text ccy)
+            .Value(text <| sprintf "%.2f" sum)
+            .Elt()
+    Templates.Summary()
+        .Rows(forEach groupedByCCy summaryRow)
+        .Elt()
+
+
+let summaryEuropeanOptions (model: Model) (name:string) dispatch =
+    let groupedByCCy =
+        model.trades
+        |> Map.values
+        |> Seq.choose (fun x ->
+            match x.trade with
+            | EuropeanOption eo -> eo.Value
+            | _ -> None
+            )
+        |> Seq.groupBy (fun m -> m.Currency)
+    let summaryRow (ccy,values : Money seq) =
+        let sum = values |> Seq.sumBy (fun v -> v.Value)
+        Templates.SummaryRow()
+            .CCY(text ccy)
+            .Value(text <| sprintf "%.2f" sum)
+            .Elt()
+    Templates.Summary()
+        .Rows(forEach groupedByCCy summaryRow)
+        .Elt()
 
 
 let paymentRow dispatch (tradeId, p : PaymentRecord) =
@@ -163,7 +184,7 @@ let europeanOptionRow dispatch (tradeId, eo : EuropeanOptionRecord) =
         .Name(eo.TradeName,tradeChange NewName)
         .Asset(eo.Asset,tradeChange NewAsset)
         .Strike(sprintf "%.2f" eo.Strike,tradeChange NewStrike)
-        .Expiry(sprintf "%A" eo.Expiry, tradeChange NewExpiry)
+        .Expiry(eo.Expiry.ToString("yyyy-MM-dd"), tradeChange NewExpiry)
         .Currency(eo.Currency, tradeChange NewCurrency)
         .ValuationMethod(EuropeanOption.valuationMethodToString eo.ValuationMethod, tradeChange NewValuationMethod)
         .OptionType(string eo.OptionType, tradeChange NewOptionType)
@@ -326,7 +347,7 @@ let paymentsPage (model: Model) dispatch =
             .Elt()    
 
     Templates.PaymentsView()
-     .SummaryPlaceholder(summary model "Summary [Payments]" dispatch)
+     .SummaryPlaceholder(summaryPayments model "Summary [Payments]" dispatch)
      .PaymentsPlaceholder(paymentsView)
      .Elt()
 
@@ -343,7 +364,7 @@ let europeanOptionsPage (model: Model) dispatch =
             .Elt()    
 
     Templates.EuropeanOptionsView()
-     .SummaryPlaceholder(summary model "Summary [European Options]" dispatch)
+     .SummaryPlaceholder(summaryEuropeanOptions model "Summary [European Options]" dispatch)
      .EuropeanOptionsPlaceholder(europeanOptionsView)
      .EOChartConfigPlaceholder(configureChart dispatch (model, europeanOptions))
      .DrawChart(fun _ -> dispatch DrawChart)

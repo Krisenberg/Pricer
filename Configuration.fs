@@ -31,27 +31,12 @@ type MarketData = Map<ConfigKey, ConfigValue>
 type AssetsData = Map<AssetKey, AssetValue>
 
 let marketDrift (marketData: MarketData) = 
-    let driftString =
-        marketData.TryFind "parameters::drift"
-        |> Option.defaultValue "5.0"
-    driftString
-    |> Double.TryParse
-    |> Utils.ofBool
-    |> Option.defaultValue 5.0
+    let drift = if marketData.ContainsKey "parameters::drift" then float marketData.[ "parameters::drift" ] else 5.0    
+    drift
 
 let assetValues (assetName: AssetKey) (assetsData: AssetsData) =
-    let key = sprintf "parameters::%s" assetName
-    let assetValue =
-        assetsData.TryFind key
-        |> Option.defaultValue { Spot = "100.0"; Vol = "10.0" }
-    let spot = 
-        assetValue.Spot
-        |> Double.TryParse
-        |> Utils.ofBool
-        |> Option.defaultValue 100.0
-    let vol = 
-        assetValue.Vol
-        |> Double.TryParse
-        |> Utils.ofBool
-        |> Option.defaultValue 10.0
+    let key = sprintf "asset::%s" assetName
+
+    let spot = if assetsData.ContainsKey key then float assetsData[ key ].Spot else 100.0
+    let vol = if assetsData.ContainsKey key then float assetsData[ key ].Vol else 10.0
     (spot, vol)

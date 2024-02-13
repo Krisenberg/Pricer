@@ -2,6 +2,8 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
+    <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
   </PropertyGroup>
   <ItemGroup>
@@ -24,6 +26,7 @@
   <ItemGroup>
     <PackageReference Include="Bolero" Version="0.*" />
     <PackageReference Include="Bolero.Build" Version="0.*" />
+    <PackageReference Include="Microsoft.JSInterop.WebAssembly" Version="7.0.15" />
     <PackageReference Include="Radzen.Blazor" Version="4.4.9" />
     <PackageReference Include="FSharp.SystemTextJson" Version="1.0.*" />
     <PackageReference Include="microsoft.aspnetcore.components.webassembly" Version="7.0.*" />

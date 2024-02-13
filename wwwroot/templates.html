@@ -63,42 +63,91 @@
   <template id="EuropeanOptions">
     <div class="content">
       <h1 class="title">European Options</h1>
-      <button class="rz-button rz-secondary rz-ripple rz-border-radius-1" onclick="${RecalculateAll}">Recalculate All</button>
-      <button class="rz-button rz-secondary rz-ripple rz-border-radius-1" onclick="${AddEuropeanOption}">Add New</button>
-      <table class="rz-grid-table" style="margin-top: 15px; width: 60%; min-width: 800px;">
+      <button class="custom-button" onclick="${RecalculateAll}">
+        <i class="fa-solid fa-rotate-right"></i>
+        Recalculate All
+      </button>
+      <button class="custom-button" onclick="${AddEuropeanOption}">
+        <i class="fa-solid fa-circle-plus"></i>
+        Add New
+      </button>
+      <table class="rz-grid-table" style="margin-top: 15px; width: 75%; min-width: 1000px;">
         <tbody>
           <tr>
-            <th></th>
-            <th style="width: 10%;">Name</th>
-            <th style="width: 6%;">Asset</th>
-            <th style="width: 6%;">Strike</th>
-            <th style="width: 10%;">Expiry</th>
-            <th style="width: 8%;">Currency</th>
-            <th style="width: 10%;">Val. Method</th>
+            <th style="width: 5%;"></th>
+            <th style="width: 20%;">Name</th>
+            <th style="width: 10%;">Asset</th>
+            <th style="width: 10%;">Strike</th>
+            <th style="width: 12%;">Expiry</th>
+            <th style="width: 10%;">Currency</th>
+            <th style="width: 12%;">Val. Method</th>
             <th style="width: 10%;">Option Type</th>
             <th style="width: 10%;">Value</th>
             <th style="width: 10%;">Delta</th>
           </tr>
           <template id="EuropeanOptionsRows">
             <tr>
-              <td><button class="rz-button rz-ripple rz-border-radius-1" onclick="${Delete}">X</button></td>
-              <td><input bind-onchange="${Name}" style="width: 150px;"/></td>
-              <td><input bind-onchange="${Asset}" style="width: 60px;"/></td>
-              <td><input bind-onchange="${Strike}" style="width: 60px;"/></td>
-              <td><input bind-onchange="${Expiry}" style="width: 150px;"/></td>
-              <td><input bind-onchange="${Currency}" style="width: 40px;"/></td>
               <td>
+                <i class="delete-button fa-solid fa-circle-xmark fa-lg" onclick="${Delete}"></i>
+              </td>
+              <td>
+                <div class="field">
+                  <input class="input" type="text" placeholder="EuropeanOption123" bind-onchange="${Name}"/>
+                </div>
+              </td>
+              <td>
+                <div class="field">
+                  <input class="input" type="text" placeholder="AAPL" bind-onchange="${Asset}"/>
+                </div>
+              </td>
+              <td>
+                <div class="field">
+                  <input class="input" type="text" placeholder="100.0" bind-onchange="${Strike}"/>
+                </div>
+              </td>
+              <td>
+                <div class="field">
+                  <input class="input" type="date" placeholder="Expiry date" bind-onchange="${Expiry}" onchange="checkFutureDate(this)">
+                </div>
+              </td>
+              <td>
+                <div class="field">
+                  <input class="input" type="text" placeholder="USD" list="currencies" bind-onchange="${Currency}"/>
+                  <datalist id="currencies">
+                    <option>USD</option>
+                    <option>EUR</option>
+                    <option>PLN</option>
+                  </datalist>
+                </div>
+              </td>
+              <td>
+                <div class="select is-normal">
+                  <select bind-onchange="${ValuationMethod}">
+                    <option value="Analytical">Analytical</option>
+                    <option value="Monte Carlo">Monte Carlo</option>
+                  </select>
+                </div>
+              </td>
+              <!-- <td>
                 <select bind-onchange="${ValuationMethod}" style="width: 150px;">
                     <option value="Analytical">Analytical</option>
                     <option value="Monte Carlo">Monte Carlo</option>
                 </select>
-              </td>
+              </td> -->
               <td>
+                <div class="select is-normal">
+                  <select bind-onchange="${OptionType}">
+                    <option value="Call">Call</option>
+                    <option value="Put">Put</option>
+                  </select>
+                </div>
+              </td>
+              <!-- <td>
                 <select bind-onchange="${OptionType}" style="width: 80px;">
                     <option value="Call">Call</option>
                     <option value="Put">Put</option>
                 </select>
-              </td>
+              </td> -->
               <td>${Value}</td>
               <td>${Delta}</td>
             </tr>

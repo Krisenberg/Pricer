@@ -370,8 +370,8 @@ let update (http: HttpClient) message model =
         let c = response |> 
                 Array.collect (fun cat -> 
                     cat.Assets
-                    |> Array.map (fun {Key = k; Spot = s; Vol = v} ->
-                        sprintf "%s::%s" cat.Category k, { Spot = s; Vol = v }))
+                    |> Array.map (fun asset ->
+                        sprintf "%s::%s" cat.Category asset.Key, { Spot = asset.Spot; Vol = asset.Vol }))
                 |> Map.ofArray
         { model with assetsData = c }, Cmd.none
     

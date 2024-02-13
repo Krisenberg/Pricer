@@ -203,10 +203,20 @@ type EuropeanOptionValuationModel(inputs: EuropeanOptionValuationInputs) =
         value
 
 
-    member this.Calculate(asset, strike, time) : Money*float =
+    member this.Calculate(strike) : Money*float =
         let value= this.valuationMethod(assetSpot, strike, this.drift, this.volatility, this.time)
         let delta = this.calculateDelta(assetSpot, strike, this.drift, this.volatility, this.time)
         { Value = (value / this.fxRate); Currency = this.finalCcy }, delta
+    
+    // member this.Calculate(spot, strike, drift, volatility, time) : Money*float =
+    //     let scaled_drift = this.convertPercentage(drift)
+    //     let scaled_volatility = this.convertPercentage(volatility)
+    //     let calculated_time = this.calculateMaturity(time)
+
+    //     let value= this.valuationMethod(spot, strike, scaled_drift, scaled_volatility, calculated_time)
+    //     let delta = this.calculateDelta(spot, strike, scaled_drift, scaled_volatility, calculated_time)
+
+    //     { Value = (value / this.fxRate); Currency = this.finalCcy }, delta
 
     member this.Simulate(spot, strike, drift, volatility, time) : Money*float =
         let scaled_drift = this.convertPercentage(drift)
