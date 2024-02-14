@@ -11,3 +11,7 @@ Pricer app - final assignment for the QSP.
 This project is based on the Microsoft .NET framework [versions 7.0.*].  
 Be sure that you have installed a proper SDK on your machine.  
 If not - you can download it from this website: <a href="(https://dotnet.microsoft.com/en-us/download/dotnet/7.0)" target="_blank">https://dotnet.microsoft.com/en-us/download/dotnet/7.0</a>.
+
+## Demo (after refactoring)
+<img src='demo_new/1.png'>
+<img src='demo_new/3.png'>
