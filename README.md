@@ -15,15 +15,15 @@ If not - you can download it from this website: <a href="(https://dotnet.microso
 ## Demo (after refactoring)
 <img src='demo_new/1.png'>
 <p float='left'>
-    <img src='demo_new/2.png'>
-    <img src='demo_new/3.png'>
+    <img src='demo_new/2.png' width='49%'>
+    <img src='demo_new/3.png' width='49%'>
 </p>
 <p float='left'>
-    <img src='demo_new/4.png'>
-    <img src='demo_new/5.png'>
-    <img src='demo_new/6.png'>
+    <img src='demo_new/4.png' width='49%'>
+    <img src='demo_new/5.png' width='49%'>
 </p>
+<img src='demo_new/6.png'>
 
 ## Demo (before refactoring)
-<img src='demo_old/1.png'>
-<img src='demo_old/2.png'>
+<img src='demo_old/old_1.png'>
+<img src='demo_old/old_2.png'>
