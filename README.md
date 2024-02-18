@@ -1,5 +1,8 @@
 # Pricer
-Pricer app - final assignment for the QSP.
+> [!NOTE]  
+> theoretical_assignments/ : a folder that contains two reports about stock process modeling and option pricing.  
+> demo_new/, demo_old/ : folders containing screenshots of the pricer web app after and before refactorization respectively.  
+> rest of the files : pricer web application.
 
 ## Installation
 1. Navigate to your local directory where the Pricer should be placed.
