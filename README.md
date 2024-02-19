@@ -1,8 +1,8 @@
 # Pricer
 > [!NOTE]  
-> theoretical_assignments/ : a folder that contains two reports about stock process modeling and option pricing.  
-> demo_new/, demo_old/ : folders containing screenshots of the pricer web app after and before refactorization respectively.  
-> rest of the files : pricer web application.
+> * `theoretical_assignments/` : a folder that contains two reports about stock process modeling and option pricing.  
+> * `demo_new/`, `demo_old/` : folders containing screenshots of the pricer web app after and before refactorization respectively.  
+> * rest : pricer web application.
 
 ## Installation
 1. Navigate to your local directory where the Pricer should be placed.
@@ -16,16 +16,8 @@ Be sure that you have installed a proper SDK on your machine.
 If not - you can download it from this website: <a href="(https://dotnet.microsoft.com/en-us/download/dotnet/7.0)" target="_blank">https://dotnet.microsoft.com/en-us/download/dotnet/7.0</a>.
 
 ## Demo (after refactoring)
-<img src='demo_new/1.png'>
-<p float='left'>
-    <img src='demo_new/2.png' width='49%'>
-    <img src='demo_new/3.png' width='49%'>
-</p>
-<p float='left'>
-    <img src='demo_new/4.png' width='49%'>
-    <img src='demo_new/5.png' width='49%'>
-</p>
-<img src='demo_new/6.png'>
+![GIF presenting website usage](demo_new/demo.gif)
+![Layout of the website](demo_new/1.png)
 
 ## Demo (before refactoring)
 <img src='demo_old/old_1.png'>
