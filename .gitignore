@@ -479,3 +479,6 @@ $RECYCLE.BIN/
 *.yml
 
 /.vscode
+
+# ! Ignore zip files
+*.zip

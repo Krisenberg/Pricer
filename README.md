@@ -22,3 +22,7 @@ If not - you can download it from this website: <a href="(https://dotnet.microso
 ## Demo (before refactoring)
 <img src='demo_old/old_1.png'>
 <img src='demo_old/old_2.png'>
+
+## Details
+This pricer is a web application dedicated to valuating financial products - especially derivatives like European or Asian Options. The Scaffold of the project was froked from: https://github.com/MaciekFlis/pricer, and then it was developed by myself.  
+This web application uses an MVU (Elm Architecture) design pattern. Every change made by the user generates a proper message and after the dispatch model is updated accordingly.
